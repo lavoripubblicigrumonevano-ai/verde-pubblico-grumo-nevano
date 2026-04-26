@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2d6a2d">
+<link rel="manifest" href="manifest.json">
+<title>🌿 Verde Pubblico - Grumo Nevano</title>
+<style>
+:root{
+  --gd:#1b5e20;--gm:#2e7d32;--gl:#4caf50;--gp:#e8f5e9;--gb:#f1f8f1;
+  --or:#e65100;--orp:#fff3e0;--rd:#c62828;--rdp:#ffebee;
+  --bl:#1565c0;--blp:#e3f2fd;
+  --td:#1a2e1a;--tm:#3e5e3e;--tl:#78917a;
+  --wh:#ffffff;--br:#c8e0c8;--sh:rgba(30,100,30,0.12);
+  --r12:12px;--r16:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--gb);color:var(--td);display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100%;}
+.hdr{background:linear-gradient(160deg,var(--gd),var(--gm));color:#fff;padding:14px 16px 10px;flex-shrink:0;box-shadow:0 2px 8px var(--sh);}
+.hdr-top{display:flex;align-items:center;gap:12px;}
+.logo-circle{width:52px;height:52px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.2);font-size:24px;}
+.hdr-txt{flex:1;}
+.hdr-comune{font-size:9.5px;opacity:.8;text-transform:uppercase;letter-spacing:.8px;font-weight:500;}
+.hdr-title{font-size:15px;font-weight:700;line-height:1.2;}
+.hdr-sub{font-size:10.5px;opacity:.75;margin-top:1px;}
+.hdr-date{font-size:11.5px;opacity:.75;margin-top:6px;}
+.nav{display:flex;background:#fff;border-top:1px solid var(--br);flex-shrink:0;box-shadow:0 -2px 8px var(--sh);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px 8px;background:none;border:none;cursor:pointer;color:var(--tl);font-size:10px;gap:2px;transition:color .15s;}
+.nb .ni{font-size:22px;line-height:1;}
+.nb.act{color:var(--gm);}
+.content{flex:1;overflow-y:auto;padding:13px 13px 4px;-webkit-overflow-scrolling:touch;}
+.vw{display:none;animation:fi .18s ease;}
+.vw.act{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#fff;border-radius:var(--r16);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px var(--sh);}
+.ct{font-size:13px;font-weight:600;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:var(--r12);font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;margin-bottom:8px;}
+.btn:last-child{margin-bottom:0;}
+.btn-p{background:var(--gl);color:#fff;}
+.btn-p:active{background:var(--gm);}
+.btn-s{background:var(--gp);color:var(--gd);}
+.btn-d{background:var(--rdp);color:var(--rd);}
+.btn-o{background:var(--orp);color:var(--or);}
+.btn-b{background:var(--blp);color:var(--bl);}
+.btn-gr{background:#eceff1;color:#546e7a;}
+.btn-gr:active{background:#cfd8dc;}
+.nl-banner{border-radius:var(--r16);padding:14px;margin-bottom:10px;text-align:center;}
+.nl-banner.ferie{background:linear-gradient(135deg,#42a5f5,#1565c0);color:#fff;}
+.nl-banner.pioggia{background:linear-gradient(135deg,#78909c,#37474f);color:#fff;}
+.nl-banner h3{font-size:15px;margin-bottom:3px;}
+.nl-banner p{font-size:12px;opacity:.85;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;}
+.sb{background:var(--gp);border-radius:var(--r12);padding:11px;text-align:center;}
+.sb.or{background:var(--orp);}
+.sb.rd{background:var(--rdp);}
+.sb.bl{background:var(--blp);}
+.sv{font-size:26px;font-weight:700;color:var(--gd);}
+.sb.or .sv{color:var(--or);}
+.sb.rd .sv{color:var(--rd);}
+.sb.bl .sv{color:var(--bl);}
+.sl{font-size:11px;color:var(--tm);margin-top:1px;}
+.ai{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r12);border:2px solid var(--br);margin-bottom:7px;cursor:pointer;transition:all .15s;background:#fff;user-select:none;}
+.ai.sel{border-color:var(--gl);background:var(--gp);}
+.ai.scuola{border-color:#ffe0b2;background:#fffde7;}
+.ai.scuola.sel{border-color:var(--or);background:var(--orp);}
+.ai.prog{border-color:#bbdefb;background:var(--blp);}
+.ai.alr{border-color:#ef9a9a;}
+.achk{width:24px;height:24px;border-radius:6px;border:2px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s;}
+.ai.sel .achk{background:var(--gl);border-color:var(--gl);color:#fff;}
+.ai.scuola.sel .achk{background:var(--or);border-color:var(--or);}
+.ain{flex:1;min-width:0;}
+.an{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ad{font-size:11px;color:var(--tl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.abg{font-size:10px;padding:2px 6px;border-radius:6px;background:var(--gp);color:var(--gd);flex-shrink:0;white-space:nowrap;}
+.abg.sc{background:var(--orp);color:var(--or);}
+.abg.al{background:var(--rdp);color:var(--rd);}
+.abg.pr{background:var(--blp);color:var(--bl);}
+.bdg{display:inline-block;font-size:10px;padding:3px 7px;border-radius:8px;font-weight:500;}
+.bdg-g{background:var(--gp);color:var(--gd);}
+.bdg-o{background:var(--orp);color:var(--or);}
+.bdg-r{background:var(--rdp);color:var(--rd);}
+.bdg-x{background:#f5f5f5;color:#888;}
+.bdg-b{background:var(--blp);color:var(--bl);}
+.fg{margin-bottom:10px;}
+.fl{font-size:12px;color:var(--tm);margin-bottom:3px;display:block;}
+.fi{width:100%;padding:9px 11px;border:2px solid var(--br);border-radius:10px;font-size:14px;background:#fff;color:var(--td);}
+.fi:focus{outline:none;border-color:var(--gl);}
+select.fi{-webkit-appearance:none;}
+.sbanner{background:linear-gradient(135deg,var(--gl),var(--gm));color:#fff;border-radius:var(--r16);padding:14px;margin-bottom:10px;text-align:center;}
+.sbanner h3{font-size:15px;margin-bottom:3px;}
+.sbanner p{font-size:12px;opacity:.85;}
+.sbanner.pm{background:linear-gradient(135deg,#fb8c00,#e65100);}
+.ci{background:#fff;border:2px solid var(--br);border-radius:var(--r12);padding:12px;margin-bottom:8px;}
+.ci-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;}
+.ci-name{font-size:13px;font-weight:600;flex:1;}
+.ci-tgl{display:flex;gap:5px;flex-shrink:0;}
+.ci-btn{padding:6px 11px;border:2px solid var(--br);border-radius:8px;font-size:12px;cursor:pointer;background:#fff;transition:all .15s;}
+.ci-btn.yes{border-color:var(--gl);background:var(--gp);color:var(--gd);font-weight:600;}
+.ci-btn.no{border-color:var(--rd);background:var(--rdp);color:var(--rd);font-weight:600;}
+.ore-row{display:flex;align-items:center;gap:8px;margin-top:7px;}
+.ore-inp{width:70px;padding:6px 8px;border:2px solid var(--br);border-radius:8px;font-size:14px;text-align:center;}
+.ore-lbl{font-size:12px;color:var(--tl);}
+.ali{padding:12px;border-radius:var(--r12);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.ali.urg{background:var(--rdp);border-left:4px solid var(--rd);}
+.ali.wrn{background:var(--orp);border-left:4px solid var(--or);}
+.ali-ico{font-size:20px;}
+.ali-txt{flex:1;}
+.ali-nm{font-size:13px;font-weight:600;}
+.ali-dy{font-size:12px;color:var(--tl);}
+.stitle{font-size:11px;font-weight:700;color:var(--tl);text-transform:uppercase;letter-spacing:.6px;margin:13px 0 7px;}
+.hi{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--br);}
+.hi:last-child{border-bottom:none;}
+.hi-dt{font-size:11px;color:var(--tl);width:48px;flex-shrink:0;}
+.hi-nm{font-size:12px;flex:1;}
+.hi-st{font-size:16px;}
+.krow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--br);font-size:13px;}
+.krow:last-child{border-bottom:none;}
+.kl{color:var(--tm);flex:1;padding-right:8px;}
+.kv{font-weight:600;color:var(--gd);text-align:right;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;}
+.mo.open{display:flex;}
+.mb{background:#fff;border-radius:20px 20px 0 0;padding:18px 15px;width:100%;max-height:88vh;overflow-y:auto;}
+.mt{font-size:17px;font-weight:700;margin-bottom:13px;text-align:center;}
+.mo-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--tl);margin-top:-2px;}
+.tgl-g{display:flex;background:var(--gp);border-radius:10px;padding:3px;margin-bottom:11px;}
+.tgl-b{flex:1;padding:9px;border:none;border-radius:8px;font-size:13px;cursor:pointer;background:none;color:var(--tm);}
+.tgl-b.act{background:var(--gm);color:#fff;font-weight:600;}
+.rp-g{display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap;}
+.rp-b{padding:6px 13px;border:2px solid var(--br);border-radius:8px;background:#fff;font-size:12px;cursor:pointer;}
+.rp-b.act{border-color:var(--gl);background:var(--gp);color:var(--gd);font-weight:600;}
+.prog-notice{background:var(--blp);border-radius:10px;padding:9px 11px;font-size:12px;color:var(--bl);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.pftr{text-align:center;font-size:9.5px;color:var(--tl);padding:5px 14px 8px;line-height:1.5;flex-shrink:0;border-top:1px solid var(--br);background:#f9fdf9;}
+.empty{text-align:center;padding:28px 16px;color:var(--tl);}
+.empty-ico{font-size:40px;margin-bottom:8px;}
+.empty-txt{font-size:13px;}
+.content::-webkit-scrollbar{width:3px;}
+.content::-webkit-scrollbar-thumb{background:var(--br);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="logo-circle">🏛️</div>
+    <div class="hdr-txt">
+      <div class="hdr-comune">Comune di Grumo Nevano (NA)</div>
+      <div class="hdr-title">🌿 Verde Pubblico</div>
+      <div class="hdr-sub">Ufficio Lavori Pubblici · Tel. 081 835 1111</div>
+    </div>
+  </div>
+  <div class="hdr-date" id="hdrDate">📅 Caricamento...</div>
+</div>
+
+<div class="content" id="content">
+
+  <div class="vw act" id="vw-home">
+    <div id="homeSummary"></div>
+    <div id="homeShift"></div>
+    <div id="homeScheduled"></div>
+    <div id="homeAlerts"></div>
+  </div>
+
+  <div class="vw" id="vw-turno">
+    <div id="turnoContent"></div>
+  </div>
+
+  <div class="vw" id="vw-aree">
+    <div class="card">
+      <div class="ct">🔍 Cerca area</div>
+      <input class="fi" type="text" id="areeSearch" placeholder="Cerca per nome o indirizzo..." oninput="renderAree()">
+    </div>
+    <div id="areeList"></div>
+  </div>
+
+  <div class="vw" id="vw-report">
+    <div class="card">
+      <div class="ct">📊 Periodo di riferimento</div>
+      <div class="rp-g" id="reportPeriods">
+        <button class="rp-b act" onclick="setRP('sett',this)">📅 Settimana</button>
+        <button class="rp-b" onclick="setRP('mese',this)">🗓️ Mese</button>
+        <button class="rp-b" onclick="setRP('trim',this)">📆 Trimestre</button>
+        <button class="rp-b" onclick="setRP('anno',this)">🗓️ Anno</button>
+      </div>
+    </div>
+    <div id="reportContent"></div>
+    <button class="btn btn-b" onclick="exportCSV()">📥 Esporta Report CSV/Excel</button>
+  </div>
+
+  <div class="vw" id="vw-alert">
+    <div class="card">
+      <div class="ct">⚙️ Soglia alert</div>
+      <div class="fg">
+        <label class="fl">Giorni senza intervento prima dell'alert</label>
+        <select class="fi" id="alertThreshold" onchange="saveSettings();renderAlerts()">
+          <option value="7">7 giorni</option>
+          <option value="10">10 giorni</option>
+          <option value="14" selected>14 giorni</option>
+          <option value="21">21 giorni</option>
+          <option value="30">30 giorni</option>
+        </select>
+      </div>
+    </div>
+    <div id="alertList"></div>
+  </div>
+
+</div>
+
+<nav class="nav">
+  <button class="nb act" id="nb-home" onclick="navigate('home')">
+    <span class="ni">🏠</span><span>Home</span>
+  </button>
+  <button class="nb" id="nb-turno" onclick="navigate('turno')">
+    <span class="ni">🌿</span><span>Turno</span>
+  </button>
+  <button class="nb" id="nb-aree" onclick="navigate('aree')">
+    <span class="ni">📍</span><span>Aree</span>
+  </button>
+  <button class="nb" id="nb-report" onclick="navigate('report')">
+    <span class="ni">📊</span><span>Report</span>
+  </button>
+  <button class="nb" id="nb-alert" onclick="navigate('alert')">
+    <span class="ni">🔔</span><span>Alert</span>
+  </button>
+</nav>
+
+<div class="pftr">
+  🔒 Documento ad uso interno esclusivo — Le informazioni contenute non devono essere divulgate a terzi.<br>
+  Trattamento dati ai sensi D.Lgs. 196/2003 e Reg. UE 679/2016 (GDPR) · Comune di Grumo Nevano
+</div>
+
+<div class="mo" id="moConferma">
+  <div class="mb">
+    <div class="mt">Conferma selezione sito</div>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:36px;margin-bottom:8px;">📍</div>
+      <div style="font-size:17px;font-weight:700;color:var(--gd);margin-bottom:4px;" id="confAreaNome"></div>
+      <div style="font-size:13px;color:var(--tl);margin-bottom:14px;" id="confAreaVia"></div>
+      <div style="background:var(--gp);border-radius:12px;padding:12px;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:600;color:var(--tm);">Turno selezionato</div>
+        <div style="font-size:15px;font-weight:700;color:var(--gd);margin-top:3px;" id="confTurnoLbl"></div>
+        <div style="font-size:12px;color:var(--tl);margin-top:2px;" id="confDurata"></div>
+      </div>
+    </div>
+    <button class="btn btn-p" id="btnConfermaAvvio">✅ Sì, avvia il turno</button>
+    <button class="btn btn-s" onclick="closeModal('moConferma')">← Scegli un altro sito</button>
+  </div>
+</div>
+
+<div class="mo" id="moFine">
+  <div class="mb">
+    <button class="mo-close" onclick="closeModal('moFine')">✕</button>
+    <div class="mt">✅ Fine Turno — Esiti Interventi</div>
+    <div id="fineContent"></div>
+    <button class="btn btn-p" onclick="confermaTurno()">💾 Conferma e Salva</button>
+    <button class="btn btn-s" onclick="closeModal('moFine')">Annulla</button>
+  </div>
+</div>
+
+<div class="mo" id="moArea">
+  <div class="mb">
+    <button class="mo-close" onclick="closeModal('moArea')">✕</button>
+    <div id="areaContent"></div>
+  </div>
+</div>
+
+<script>
+// Aree estratte dal censimento ufficiale (solo quelle con campo NOME valorizzato)
+const AREAS=[
+  {id:1,  via:"Via Vespucci snc",       nome:"Scuola Via Vespucci",              tipo:"scuola", mq:null,  ist:"I.C. Pascoli"},
+  {id:2,  via:"Via Giotto 2 - Deledda", nome:"Scuola Via Giotto",               tipo:"scuola", mq:155,   ist:"I.C. Pascoli"},
+  {id:3,  via:"Via XXIV Maggio 58",     nome:"Scuola Via XXIV Maggio",          tipo:"scuola", mq:805,   ist:"I.C. Pascoli"},
+  {id:4,  via:"Via Quintavalle",        nome:"Scuola Via Quintavalle",          tipo:"scuola", mq:1010,  ist:"I.C. Matteotti"},
+  {id:5,  via:"Via Meucci",             nome:"Scuola Via Meucci",               tipo:"scuola", mq:1730,  ist:"I.C. Matteotti"},
+  {id:6,  via:"Via Baracca 23",         nome:"Scuola Via Baracca",              tipo:"scuola", mq:397,   ist:"I.C. Matteotti"},
+  {id:7,  via:"Via Giotto 4",           nome:"Sede Comunale",                   tipo:"pubbl",  mq:60,    ist:null},
+  {id:8,  via:"Corso Mazzini",          nome:"Villa Comunale (Corso Mazzini)",  tipo:"pubbl",  mq:7400,  ist:null},
+  {id:9,  via:"Via Meucci",             nome:"Orto Cirilliano",                 tipo:"pubbl",  mq:3500,  ist:null},
+  {id:10, via:"Via Meucci",             nome:"Parco Giochi Caduti di Nassirya", tipo:"pubbl",  mq:1000,  ist:null},
+  {id:11, via:"Via C.A. Dalla Chiesa",  nome:"Campo Sportivo",                  tipo:"sport",  mq:29720, ist:null},
+  {id:13, via:"Via C.A. Dalla Chiesa",  nome:"Villa Comunale (campo sportivo)", tipo:"sport",  mq:null,  ist:null},
+  {id:29, via:"Via Carabinieri",        nome:"Comando Carabinieri",             tipo:"ist",    mq:null,  ist:null},
+];
+
+const TICON={scuola:"🏫",pubbl:"🌳",sport:"⚽",piazza:"🏛️",priv:"🔒",ist:"🚨"};
+const TLBL={scuola:"Scuola",pubbl:"Area pubblica",sport:"Area sportiva",piazza:"Piazza",priv:"Gest. privata",ist:"Istituzionale"};
+const GIORNI=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+const MESI=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+
+function gdb(k,d=[]){try{return JSON.parse(localStorage.getItem('gvn_'+k)||JSON.stringify(d));}catch{return d;}}
+function sdb(k,v){localStorage.setItem('gvn_'+k,JSON.stringify(v));}
+function gset(){return gdb('settings',{alertDays:14});}
+function saveSettings(){const s=gset();s.alertDays=parseInt(document.getElementById('alertThreshold')?.value||14);sdb('settings',s);}
+function gints(){return gdb('ints',[]);}
+function gsched(){return gdb('sched',[]);}
+function gshift(){return gdb('shift',null);}
+function gnl(){return gdb('nonlavoro',[]);}
+
+function registraNonLavoro(turno,motivo){
+  const label=turno==='am'?'Mattina':'Pomeriggio';
+  const icon=motivo==='ferie'?'🏖️':'🌧️';
+  const txt=motivo==='ferie'?'Ferie':'Pioggia';
+  if(!confirm(`${icon} Confermi di segnare il turno ${label} come "${txt}"?\nIl turno non verrà lavorato.`))return;
+  const nl=gnl();
+  // rimuovi eventuale record esistente per stesso giorno+turno
+  const idx=nl.findIndex(x=>x.data===today()&&x.turno===turno);
+  if(idx>=0)nl.splice(idx,1);
+  nl.push({id:uid(),data:today(),turno,motivo});
+  sdb('nonlavoro',nl);
+  renderTurnoIdle();
+  navigate('home');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+
+function today(){return new Date().toISOString().slice(0,10);}
+function dstr(d){const x=new Date(d);return `${x.getDate().toString().padStart(2,'0')}/${(x.getMonth()+1).toString().padStart(2,'0')}/${x.getFullYear()}`;}
+function ddiff(d1,d2){return Math.round((new Date(d2)-new Date(d1))/(864e5));}
+function isMorn(d){const dw=new Date(d).getDay();return dw>=1&&dw<=5;}
+function isAftn(d){const dw=new Date(d).getDay();return dw===2||dw===4;}
+
+function nextWD(from,pref){
+  let d=new Date(from);d.setDate(d.getDate()+1);
+  for(let i=0;i<14;i++){
+    const dw=d.getDay();
+    if(pref&&(dw===2||dw===4))return d.toISOString().slice(0,10);
+    if(!pref&&dw>=1&&dw<=5)return d.toISOString().slice(0,10);
+    d.setDate(d.getDate()+1);
+  }
+  return d.toISOString().slice(0,10);
+}
+
+let curView='home';
+let rpPeriod='sett';
+let curAree=[];
+let fineData={};
+
+function navigate(v){
+  document.querySelectorAll('.vw').forEach(x=>x.classList.remove('act'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('act'));
+  document.getElementById('vw-'+v).classList.add('act');
+  document.getElementById('nb-'+v).classList.add('act');
+  curView=v;
+  document.getElementById('content').scrollTop=0;
+  if(v==='home')renderHome();
+  else if(v==='turno')renderTurno();
+  else if(v==='aree')renderAree();
+  else if(v==='report')renderReport();
+  else if(v==='alert')renderAlerts();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function getAlerts(){
+  const alertDays=gset().alertDays||14;
+  const urg=[],wrn=[];
+  AREAS.forEach(a=>{
+    const ai=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data));
+    const last=ai[0];
+    const days=last?ddiff(last.data,today()):999;
+    if(a.tipo==='priv')return;
+    if(days>alertDays*1.5)urg.push({area:a,days,last});
+    else if(days>alertDays)wrn.push({area:a,days,last});
+  });
+  return{urg:urg.sort((a,b)=>b.days-a.days),wrn:wrn.sort((a,b)=>b.days-a.days)};
+}
+
+function renderHome(){
+  const t=today();const dt=new Date();
+  document.getElementById('hdrDate').innerHTML=`📅 ${GIORNI[dt.getDay()]} ${dt.getDate()} ${MESI[dt.getMonth()]} ${dt.getFullYear()}`;
+  const wints=getWInts();const mints=getMInts();const al=getAlerts();
+  document.getElementById('homeSummary').innerHTML=`<div class="sg">
+    <div class="sb"><div class="sv">${wints.length}</div><div class="sl">🌿 Interventi settimana</div></div>
+    <div class="sb"><div class="sv">${mints.length}</div><div class="sl">📅 Interventi mese</div></div>
+    <div class="sb ${al.urg.length>0?'rd':''}"><div class="sv">${al.urg.length+al.wrn.length}</div><div class="sl">🔔 Alert attivi</div></div>
+    <div class="sb bl"><div class="sv">${AREAS.length}</div><div class="sl">📍 Aree totali</div></div>
+  </div>`;
+
+  const shift=gshift();
+  if(shift){
+    document.getElementById('homeShift').innerHTML=`
+    <div class="sbanner ${shift.turno==='pm'?'pm':''}">
+      <h3>${shift.turno==='pm'?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} IN CORSO 🟢</h3>
+      <p>Avviato: ${shift.inizioOra} · ${shift.aree.length} aree selezionate</p>
+    </div>
+    <button class="btn btn-d" onclick="navigate('turno')">🏁 Fine Turno — Inserisci Esiti</button>`;
+  } else {
+    // mostra banner ferie/pioggia già segnati oggi
+    const nlOggi=gnl().filter(x=>x.data===t);
+    let btns='';
+    nlOggi.forEach(x=>{
+      const isPm=x.turno==='pm';
+      const icon=x.motivo==='ferie'?'🏖️':'🌧️';
+      const txt=x.motivo==='ferie'?'Ferie':'Pioggia';
+      btns+=`<div class="nl-banner ${x.motivo}" style="margin-bottom:8px;">
+        <h3>${icon} Turno ${isPm?'Pomeriggio':'Mattina'}: ${txt}</h3>
+        <p>Nessun intervento previsto per questo turno</p>
+      </div>`;
+    });
+    const nlTurni=nlOggi.map(x=>x.turno);
+    if(isMorn(t)&&!nlTurni.includes('am'))btns+=`<button class="btn btn-p" onclick="navigate('turno')">☀️ Inizia Turno Mattina &nbsp;<small style="opacity:.8;font-size:11px">(5 ore · Lun-Ven)</small></button>`;
+    if(isAftn(t)&&!nlTurni.includes('pm'))btns+=`<button class="btn btn-o" onclick="navigate('turno')">🌅 Inizia Turno Pomeriggio &nbsp;<small style="opacity:.8;font-size:11px">(3 ore · Mar-Gio)</small></button>`;
+    if(!isMorn(t)&&!isAftn(t)&&!nlOggi.length)btns=`<div class="card" style="text-align:center;color:var(--tl);font-size:13px;padding:18px;">🏖️ Oggi non ci sono turni programmati</div>`;
+    document.getElementById('homeShift').innerHTML=btns;
+  }
+
+  const sched=gsched().filter(s=>s.data===t);
+  if(sched.length>0){
+    let sh=`<div class="card"><div class="ct">📋 Aree programmate oggi</div>`;
+    sched.forEach(s=>{const a=AREAS.find(x=>x.id===s.areaId);if(a)sh+=`<div class="ai prog"><span style="font-size:18px">📌</span><div class="ain"><div class="an">${a.nome}</div><div class="ad">${a.via}</div></div><span class="abg pr">${s.turno==='pm'?'🌅 Pomeriggio':'☀️ Mattina'}</span></div>`;});
+    sh+=`</div>`;document.getElementById('homeScheduled').innerHTML=sh;
+  } else document.getElementById('homeScheduled').innerHTML='';
+
+  if(al.urg.length>0){
+    let ah=`<div class="card"><div class="ct">🚨 Alert urgenti</div>`;
+    al.urg.slice(0,3).forEach(x=>{ah+=`<div class="ali urg"><span class="ali-ico">🚨</span><div class="ali-txt"><div class="ali-nm">${x.area.nome}</div><div class="ali-dy">${x.days===999?'Mai lavorata':x.days+' gg senza intervento'}</div></div></div>`;});
+    if(al.urg.length>3)ah+=`<button class="btn btn-d" style="margin-top:6px;padding:8px" onclick="navigate('alert')">Vedi tutti (${al.urg.length})</button>`;
+    ah+=`</div>`;document.getElementById('homeAlerts').innerHTML=ah;
+  } else document.getElementById('homeAlerts').innerHTML='';
+}
+
+function renderTurno(){
+  const shift=gshift();
+  if(shift)renderTurnoActive(shift);
+  else renderTurnoIdle();
+}
+
+function turnoBlock(turno){
+  const t=today();
+  const isPm=turno==='pm';
+  const avail=isPm?isAftn(t):isMorn(t);
+  if(!avail) return `<p style="font-size:12px;color:var(--tl);margin-bottom:8px">⚪ Turno ${isPm?'pomeriggio':'mattina'} non disponibile oggi</p>`;
+  // controlla se già segnato ferie/pioggia
+  const nl=gnl().find(x=>x.data===t&&x.turno===turno);
+  if(nl){
+    const icon=nl.motivo==='ferie'?'🏖️':'🌧️';
+    const txt=nl.motivo==='ferie'?'Ferie':'Pioggia';
+    const label=isPm?'Pomeriggio':'Mattina';
+    return `<div class="nl-banner ${nl.motivo}" style="margin-bottom:8px;">
+      <h3>${icon} Turno ${label}: ${txt}</h3>
+      <p>Segnato oggi — nessun intervento eseguito</p>
+    </div>
+    <button class="btn btn-gr" style="margin-bottom:8px" onclick="annullaNonLavoro('${turno}')">↩️ Annulla segnalazione</button>`;
+  }
+  const lbl=isPm?'🌅 Avvia Turno Pomeriggio':'☀️ Avvia Turno Mattina';
+  const sub=isPm?'Martedì / Giovedì · 3 ore · Accesso scuole':'Lunedì–Venerdì · 5 ore';
+  const cls=isPm?'btn-o':'btn-p';
+  return `<button class="btn ${cls}" onclick="setupShift('${turno}')">${lbl}<br><small style="font-weight:400;opacity:.85">${sub}</small></button>
+  <div style="display:flex;gap:7px;margin-bottom:8px;">
+    <button class="btn btn-b" style="flex:1;padding:9px;font-size:13px;" onclick="registraNonLavoro('${turno}','ferie')">🏖️ Ferie</button>
+    <button class="btn btn-gr" style="flex:1;padding:9px;font-size:13px;" onclick="registraNonLavoro('${turno}','pioggia')">🌧️ Pioggia</button>
+  </div>`;
+}
+
+function annullaNonLavoro(turno){
+  const nl=gnl().filter(x=>!(x.data===today()&&x.turno===turno));
+  sdb('nonlavoro',nl);
+  renderTurnoIdle();
+}
+
+function renderTurnoIdle(){
+  const t=today();
+  document.getElementById('turnoContent').innerHTML=`
+  <div class="card">
+    <div class="ct">🌿 Gestione Turno</div>
+    <p style="font-size:13px;color:var(--tm);margin-bottom:12px;">Seleziona il turno da avviare per oggi.</p>
+    ${turnoBlock('am')}
+    ${turnoBlock('pm')}
+  </div>
+  <div class="card"><div class="ct">📜 Ultimi interventi e assenze</div>${renderLastInts()}</div>`;
+}
+
+function setupShift(turno){
+  curAree=[];   // reset — la selezione avviene toccando il sito in renderSetup
+  renderSetup(turno);
+}
+
+// ── 1 SOLO SITO PER TURNO ──────────────────────────────────────────────────
+const DURATA_TURNO={am:5,pm:3};
+
+// curAree[0] = l'unico sito selezionato (array mantenuto per compatibilità storage)
+function selectSito(id,turno){
+  const a=AREAS.find(x=>x.id===id);
+  if(!a)return;
+  const isPm=turno==='pm';
+  const durata=DURATA_TURNO[turno]||5;
+  const turnoLbl=isPm?'🌅 Pomeriggio (3h)':'☀️ Mattina (5h)';
+  // mostra modal di conferma
+  document.getElementById('confAreaNome').textContent=a.nome;
+  document.getElementById('confAreaVia').textContent=a.via+(a.mq?' · '+a.mq.toLocaleString('it')+' m²':'');
+  document.getElementById('confTurnoLbl').textContent=turnoLbl;
+  document.getElementById('confDurata').textContent=durata+'h dedicate a questo sito';
+  document.getElementById('btnConfermaAvvio').onclick=()=>{
+    closeModal('moConferma');
+    curAree=[id];
+    confirmStart(turno);
+  };
+  openModal('moConferma');
+}
+
+function renderSetup(turno){
+  const isPm=turno==='pm';
+  const durata=DURATA_TURNO[turno]||5;
+  // sito riprogrammato da turno precedente?
+  const sched=gsched().find(s=>s.data===today()&&s.turno===turno);
+
+  let noticeHtml='';
+  if(sched){
+    const ar=AREAS.find(a=>a.id===sched.areaId);
+    noticeHtml=`<div class="prog-notice">📌 Sito riprogrammato dal turno precedente:<br>
+      <strong>${ar?ar.nome:'Area '+sched.areaId}</strong> — toccalo per confermarlo oppure scegline un altro.</div>`;
+  }
+
+  let listHtml='';
+  if(isPm){
+    listHtml+=`<div class="stitle">🏫 Scuole (solo pomeriggio)</div>`;
+    AREAS.filter(a=>a.tipo==='scuola').forEach(a=>listHtml+=sitoItem(a,turno,sched));
+    listHtml+=`<div class="stitle">🌳 Altre aree</div>`;
+    AREAS.filter(a=>a.tipo!=='scuola').forEach(a=>listHtml+=sitoItem(a,turno,sched));
+  } else {
+    AREAS.filter(a=>a.tipo!=='scuola').forEach(a=>listHtml+=sitoItem(a,turno,sched));
+  }
+
+  document.getElementById('turnoContent').innerHTML=`
+  <div class="sbanner ${isPm?'pm':''}">
+    <h3>${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'}</h3>
+    <p>${isPm?'Mar/Gio':'Lun-Ven'} · ⏱️ ${durata} ore · Tocca il sito da lavorare oggi</p>
+  </div>
+  <div class="card">
+    <div class="ct">📍 Scegli il sito di oggi <span style="font-size:11px;font-weight:400;color:var(--tl)">(1 sito per turno)</span></div>
+    ${noticeHtml}${listHtml}
+  </div>
+  <button class="btn btn-s" onclick="renderTurnoIdle()">← Indietro</button>`;
+}
+
+function sitoItem(a,turno,sched){
+  const isProg=sched&&sched.areaId===a.id;
+  const last=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data))[0];
+  const days=last?ddiff(last.data,today()):null;
+  const alertDays=gset().alertDays||14;
+  const isAlr=days===null||days>alertDays;
+  const lastTxt=last?`Ultimo: ${dstr(last.data)} (${days}gg fa)`:'⚠️ Mai lavorata';
+  return `<div class="ai ${a.tipo==='scuola'?'scuola':''} ${isProg?'prog':''} ${isAlr&&!isProg?'alr':''}"
+    onclick="selectSito(${a.id},'${turno}')" style="cursor:pointer;">
+    <div class="achk" style="font-size:18px;">${isProg?'📌':'▶️'}</div>
+    <div class="ain">
+      <div class="an">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+      <div class="ad">${a.via}${a.mq?` · ${a.mq.toLocaleString('it')} m²`:''}</div>
+      <div class="ad">${lastTxt}</div>
+    </div>
+    ${a.tipo==='scuola'?`<span class="abg sc">🏫</span>`:''}
+    ${isAlr?`<span class="abg al">⚠️</span>`:''}
+  </div>`;
+}
+
+function confirmStart(turno){
+  if(!curAree.length){alert('⚠️ Seleziona un sito!');return;}
+  const now=new Date();
+  const durata=DURATA_TURNO[turno]||5;
+  sdb('shift',{id:uid(),data:today(),turno,durata,aree:[curAree[0]], // sempre 1 sito
+    inizioOra:`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`});
+  renderTurnoActive(gshift());
+}
+
+function renderTurnoActive(shift){
+  const isPm=shift.turno==='pm';
+  const durata=DURATA_TURNO[shift.turno]||5;
+  const a=AREAS.find(x=>x.id===shift.aree[0]);
+  if(!a)return;
+  document.getElementById('turnoContent').innerHTML=`
+  <div class="sbanner ${isPm?'pm':''}">
+    <h3>${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} IN CORSO 🟢</h3>
+    <p>Avviato: ${shift.inizioOra} · ⏱️ ${durata}h totali</p>
+  </div>
+  <div class="card">
+    <div class="ct">📍 Sito in lavorazione</div>
+    <div class="ai sel">
+      <div class="achk">✓</div>
+      <div class="ain">
+        <div class="an" style="font-size:15px;">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+        <div class="ad">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</div>
+        <div class="ad" style="margin-top:3px;">⏱️ Tutto il turno dedicato a questo sito (${durata}h)</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-d" onclick="openFine()">🏁 Fine Turno — Inserisci Esito</button>
+  <button class="btn btn-s" onclick="cancelShift()">❌ Annulla turno</button>`;
+}
+
+function cancelShift(){
+  if(confirm('Annullare il turno? I dati non verranno salvati.')){sdb('shift',null);renderTurnoIdle();}
+}
+
+// ── FINE TURNO: 1 sito, ore = intera durata turno ──────────────────────────
+function openFine(){
+  const shift=gshift();if(!shift)return;
+  const isPm=shift.turno==='pm';
+  const durata=DURATA_TURNO[shift.turno]||5;
+  const a=AREAS.find(x=>x.id===shift.aree[0]);
+  if(!a)return;
+  fineData={};
+  fineData[a.id]={term:null,ore:durata};
+
+  document.getElementById('fineContent').innerHTML=`
+  <div style="background:var(--gp);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--tm);margin-bottom:14px;text-align:center;">
+    ${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} · <strong>${durata} ore</strong> dedicate a questo sito
+  </div>
+  <div class="ci" id="ci-${a.id}">
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">${TICON[a.tipo]||'📍'} ${a.nome}<br>
+      <span style="font-size:12px;color:var(--tl);font-weight:400">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</span>
+    </div>
+    <p style="font-size:13px;color:var(--tm);margin-bottom:10px;font-weight:600;">Il sito è stato completato?</p>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <button class="ci-btn" id="ciy-${a.id}" onclick="setCi(${a.id},true)"
+        style="flex:1;padding:14px;font-size:15px;">✅ Sì, completato</button>
+      <button class="ci-btn" id="cin-${a.id}" onclick="setCi(${a.id},false)"
+        style="flex:1;padding:14px;font-size:15px;">🔄 No, continua</button>
+    </div>
+    <input class="fi" type="text" placeholder="📝 Note (opzionale)" id="note-${a.id}"
+      style="font-size:13px;padding:9px 11px;">
+  </div>`;
+
+  openModal('moFine');
+}
+
+function setCi(id,done){
+  fineData[id].term=done;
+  document.getElementById('ciy-'+id).className='ci-btn'+(done?' yes':'');
+  document.getElementById('cin-'+id).className='ci-btn'+(!done?' no':'');
+}
+
+function confermaTurno(){
+  const shift=gshift();if(!shift)return;
+  const id=shift.aree[0];
+  if(fineData[id]?.term===null||fineData[id]?.term===undefined){
+    alert('⚠️ Indica se il sito è stato completato oppure no!');return;
+  }
+  const d=fineData[id];
+  const durata=DURATA_TURNO[shift.turno]||5;
+  const note=document.getElementById('note-'+id)?.value||'';
+  const ints=gints();const sched=gsched();const t=today();
+  const a=AREAS.find(x=>x.id===id);
+
+  ints.push({id:uid(),data:t,turno:shift.turno,areaId:id,terminata:d.term,ore:durata,note});
+
+  if(!d.term){
+    // riprogramma al prossimo turno disponibile
+    const isSc=a?.tipo==='scuola';
+    const nxtD=nextWD(t,isSc);
+    const nxtT=isSc?'pm':'am';
+    const ex=sched.findIndex(s=>s.areaId===id);
+    if(ex>=0)sched.splice(ex,1);
+    sched.push({areaId:id,data:nxtD,turno:nxtT,motivo:'non_terminata'});
+  } else {
+    // rimuovi dalla programmazione se completato
+    const ex=sched.findIndex(s=>s.areaId===id&&s.data===t);
+    if(ex>=0)sched.splice(ex,1);
+  }
+
+  sdb('ints',ints);sdb('sched',sched);sdb('shift',null);
+  closeModal('moFine');
+
+  if(d.term){
+    const kpi=a?.mq?(durata/a.mq*60).toFixed(1):null;
+    alert(`✅ Turno salvato!\n\n📍 ${a?.nome}\n⏱️ ${durata}h lavorate${kpi?'\n📊 KPI: '+kpi+' min/100m²':''}`);
+  } else {
+    const nxtD=sched.find(s=>s.areaId===id)?.data;
+    alert(`🔄 Sito non completato — verrà riprogrammato\n\n📍 ${a?.nome}\n📅 Prossimo turno: ${nxtD?dstr(nxtD):'da definire'}`);
+  }
+  renderTurnoIdle();navigate('home');
+}
+
+function renderAree(){
+  const q=(document.getElementById('areeSearch')?.value||'').toLowerCase();
+  const alert=gset().alertDays||14;
+  const areas=AREAS.filter(a=>!q||a.nome.toLowerCase().includes(q)||a.via.toLowerCase().includes(q));
+  let html=areas.map(a=>{
+    const ai=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data));
+    const last=ai[0];const days=last?ddiff(last.data,today()):null;
+    const isAlr=days===null||days>alert;
+    let stbdg=last?
+      (days===0?`<span class="bdg bdg-g">Oggi</span>`:
+       days<=7?`<span class="bdg bdg-g">${days}gg fa</span>`:
+       days<=alert?`<span class="bdg bdg-o">${days}gg fa</span>`:
+       `<span class="bdg bdg-r">${days}gg fa ⚠️</span>`):
+      `<span class="bdg bdg-r">Mai ⚠️</span>`;
+    return `<div class="ai ${isAlr?'alr':''}" onclick="showArea(${a.id})">
+      <div class="ain"><div class="an">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+      <div class="ad">${a.via}${a.mq?` · ${a.mq.toLocaleString('it')} m²`:''}</div>
+      <div class="ad">${TLBL[a.tipo]||a.tipo}</div></div>
+      <div style="text-align:right;flex-shrink:0;">${stbdg}${a.tipo==='scuola'?`<br><span class="abg sc" style="margin-top:3px;display:inline-block">🏫</span>`:''}
+      </div></div>`;
+  }).join('');
+  document.getElementById('areeList').innerHTML=html||`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Nessuna area trovata</div></div>`;
+}
+
+function showArea(id){
+  const a=AREAS.find(x=>x.id===id);if(!a)return;
+  const ai=gints().filter(i=>i.areaId===id).sort((x,y)=>y.data.localeCompare(x.data));
+  const last=ai[0];const days=last?ddiff(last.data,today()):null;
+  const totOre=ai.reduce((s,i)=>s+(i.ore||0),0);
+  const kpi=a.mq&&totOre>0?(totOre/a.mq*60).toFixed(2):null;
+  let hist=ai.slice(0,10).map(i=>`<div class="hi"><div class="hi-dt">${dstr(i.data)}</div>
+    <div class="hi-nm">${i.turno==='pm'?'🌅 Pm':'☀️ Am'}${i.ore?` · ${i.ore}h`:''}${i.note?` · ${i.note}`:''}</div>
+    <div class="hi-st">${i.terminata?'✅':'🔄'}</div></div>`).join('');
+  if(!hist)hist=`<div style="color:var(--tl);font-size:13px;text-align:center;padding:10px">Nessun intervento registrato</div>`;
+  document.getElementById('areaContent').innerHTML=`
+  <div class="mt">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="krow"><span class="kl">📍 Indirizzo</span><span class="kv">${a.via}</span></div>
+    <div class="krow"><span class="kl">🏷️ Tipo</span><span class="kv">${TLBL[a.tipo]||a.tipo}</span></div>
+    ${a.mq?`<div class="krow"><span class="kl">📐 Superficie</span><span class="kv">${a.mq.toLocaleString('it')} m²</span></div>`:''}
+    ${a.ist?`<div class="krow"><span class="kl">🏫 Istituto</span><span class="kv">${a.ist}</span></div>`:''}
+    ${last?`<div class="krow"><span class="kl">🗓️ Ultimo interv.</span><span class="kv">${dstr(last.data)} (${days}gg fa)</span></div>`:
+            `<div class="krow"><span class="kl">🗓️ Ultimo interv.</span><span class="kv" style="color:var(--rd)">Mai lavorata</span></div>`}
+    <div class="krow"><span class="kl">🔢 Tot. interventi</span><span class="kv">${ai.length}</span></div>
+    <div class="krow"><span class="kl">⏱️ Ore totali</span><span class="kv">${totOre.toFixed(1)}h</span></div>
+    ${kpi?`<div class="krow"><span class="kl">📊 KPI (min/100m²)</span><span class="kv">${kpi} min/100m²</span></div>`:''}
+  </div>
+  <div class="stitle">Storico interventi</div>
+  <div class="card">${hist}</div>`;
+  openModal('moArea');
+}
+
+function setRP(p,btn){
+  rpPeriod=p;
+  document.querySelectorAll('.rp-b').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');renderReport();
+}
+
+function getWInts(){
+  const t=new Date(today());const dow=t.getDay();
+  const mo=new Date(t);mo.setDate(t.getDate()-(dow===0?6:dow-1));
+  return gints().filter(i=>i.data>=mo.toISOString().slice(0,10)&&i.data<=today());
+}
+function getMInts(){const t=today();return gints().filter(i=>i.data.startsWith(t.slice(0,7)));}
+function getPInts(){
+  const t=today();
+  if(rpPeriod==='sett')return getWInts();
+  if(rpPeriod==='mese')return getMInts();
+  if(rpPeriod==='trim'){const d=new Date(t);d.setMonth(d.getMonth()-3);return gints().filter(i=>i.data>=d.toISOString().slice(0,10));}
+  return gints().filter(i=>i.data.startsWith(t.slice(0,4)));
+}
+
+function getPNl(){
+  const t=today();
+  if(rpPeriod==='sett'){const w=getWInts();const wDates=new Set(w.map(i=>i.data));const allNl=gnl();return allNl.filter(x=>{const dt=new Date(x.data);const dow=dt.getDay();return dt>=new Date([...wDates].sort()[0]||t)&&x.data<=t;});}
+  if(rpPeriod==='mese')return gnl().filter(x=>x.data.startsWith(today().slice(0,7)));
+  if(rpPeriod==='trim'){const d=new Date(today());d.setMonth(d.getMonth()-3);return gnl().filter(x=>x.data>=d.toISOString().slice(0,10));}
+  return gnl().filter(x=>x.data.startsWith(today().slice(0,4)));
+}
+
+function buildWeekDashboard(){
+  // Dashboard settimanale: griglia Lun-Ven × Mattina/Pomeriggio
+  const wints=getWInts();
+  const wnl=gnl().filter(x=>{
+    const d=new Date(x.data);const dw=d.getDay();
+    return dw>=1&&dw<=5&&x.data>=getMonLun()&&x.data<=today();
+  });
+  const DAYS_IT=['Lun','Mar','Mer','Gio','Ven'];
+  // calcola lunedì della settimana corrente
+  const monStr=getMonLun();
+  let html=`<div class="card"><div class="ct">📅 Dashboard settimana corrente</div>`;
+  // tabella giorni
+  html+=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <tr>
+      <th style="padding:5px 4px;background:var(--gp);border-radius:6px;"></th>
+      ${DAYS_IT.map((d,i)=>{
+        const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
+        const isToday=dt.toISOString().slice(0,10)===today();
+        return `<th style="padding:5px 4px;text-align:center;background:${isToday?'var(--gl)':'var(--gp)'};color:${isToday?'#fff':'var(--tm)'};border-radius:6px;">${d}<br><span style="font-size:9px;font-weight:400;">${dt.getDate()}/${dt.getMonth()+1}</span></th>`;
+      }).join('')}
+    </tr>
+    ${['am','pm'].map(turno=>{
+      const lbl=turno==='am'?'☀️ Matt.':'🌅 Pom.';
+      return `<tr>
+        <td style="padding:5px 4px;font-weight:600;color:var(--tm);white-space:nowrap;">${lbl}</td>
+        ${[0,1,2,3,4].map(i=>{
+          const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
+          const ds=dt.toISOString().slice(0,10);
+          const dw=dt.getDay();
+          // pomeriggio solo mar(2) e gio(4)
+          if(turno==='pm'&&dw!==2&&dw!==4){
+            return `<td style="padding:5px 4px;text-align:center;background:#f5f5f5;border-radius:6px;color:#bbb;">—</td>`;
+          }
+          const nl=wnl.find(x=>x.data===ds&&x.turno===turno);
+          if(nl){
+            const ico=nl.motivo==='ferie'?'🏖️':'🌧️';
+            return `<td style="padding:5px 4px;text-align:center;background:#e3f2fd;border-radius:6px;">${ico}</td>`;
+          }
+          const dayInts=wints.filter(x=>x.data===ds&&x.turno===turno);
+          if(!dayInts.length){
+            const isPast=ds<today();
+            return `<td style="padding:5px 4px;text-align:center;background:${isPast?'var(--rdp)':'#fafafa'};border-radius:6px;">${isPast?'❌':''}</td>`;
+          }
+          const done=dayInts[0].terminata;
+          const a=AREAS.find(x=>x.id===dayInts[0].areaId);
+          const short=a?a.nome.split(' ').slice(0,2).join(' '):'';
+          return `<td style="padding:5px 4px;text-align:center;background:${done?'var(--gp)':'var(--orp)'};border-radius:6px;" title="${a?a.nome:''}">${done?'✅':'🔄'}<br><span style="font-size:9px;color:var(--tm)">${short}</span></td>`;
+        }).join('')}
+      </tr>`;
+    }).join('')}
+  </table></div>`;
+  // legenda
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;color:var(--tl);">
+    <span>✅ Completato</span><span>🔄 In corso</span><span>❌ Non eseguito</span><span>🏖️ Ferie</span><span>🌧️ Pioggia</span><span>— Non previsto</span>
+  </div>`;
+  html+=`</div>`;
+  return html;
+}
+
+function getMonLun(){
+  const t=new Date(today());const dw=t.getDay();
+  const mo=new Date(t);mo.setDate(t.getDate()-(dw===0?6:dw-1));
+  return mo.toISOString().slice(0,10);
+}
+
+function renderReport(){
+  const ints=getPInts();
+  const comp=ints.filter(i=>i.terminata).length;
+  const totOre=ints.reduce((s,i)=>s+(i.ore||0),0);
+  const uniq=new Set(ints.map(i=>i.areaId)).size;
+  const nls=getPNl();
+  const nFerie=nls.filter(x=>x.motivo==='ferie').length;
+  const nPioggia=nls.filter(x=>x.motivo==='pioggia').length;
+
+  // Dashboard settimanale sempre in cima al report
+  let html=buildWeekDashboard();
+
+  html+=`<div class="sg">
+    <div class="sb"><div class="sv">${ints.length}</div><div class="sl">🌿 Interventi</div></div>
+    <div class="sb"><div class="sv">${comp}</div><div class="sl">✅ Completati</div></div>
+    <div class="sb bl"><div class="sv">${totOre.toFixed(1)}</div><div class="sl">⏱️ Ore totali</div></div>
+    <div class="sb"><div class="sv">${uniq}</div><div class="sl">📍 Aree lavorate</div></div>
+  </div>`;
+  if(nFerie||nPioggia){
+    html+=`<div class="card"><div class="ct">📋 Assenze nel periodo</div>
+      <div class="krow"><span class="kl">🏖️ Turni in Ferie</span><span class="kv">${nFerie}</span></div>
+      <div class="krow"><span class="kl">🌧️ Turni per Pioggia</span><span class="kv">${nPioggia}</span></div>
+    </div>`;
+  }
+  const byA={};
+  ints.forEach(i=>{if(!byA[i.areaId])byA[i.areaId]={c:0,ore:0,comp:0};byA[i.areaId].c++;byA[i.areaId].ore+=i.ore||0;if(i.terminata)byA[i.areaId].comp++;});
+  if(Object.keys(byA).length){
+    html+=`<div class="card"><div class="ct">📊 KPI per area (ore · min/100m²)</div>`;
+    Object.entries(byA).sort((a,b)=>b[1].ore-a[1].ore).forEach(([id,d])=>{
+      const a=AREAS.find(x=>x.id===parseInt(id));if(!a)return;
+      const kpi=a.mq&&d.ore>0?(d.ore/a.mq*60).toFixed(1):null;
+      html+=`<div class="krow"><span class="kl">${TICON[a.tipo]||''} ${a.nome}</span><span class="kv">${d.ore.toFixed(1)}h${kpi?` · ${kpi}'/100m²`:''}</span></div>`;
+    });html+=`</div>`;
+  }
+  const byD={};
+  ints.forEach(i=>{if(!byD[i.data])byD[i.data]={am:0,pm:0};byD[i.data][i.turno]=(byD[i.data][i.turno]||0)+1;});
+  if(Object.keys(byD).length){
+    html+=`<div class="card"><div class="ct">📅 Dettaglio per giorno</div>`;
+    Object.entries(byD).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20).forEach(([d,t])=>{
+      html+=`<div class="krow"><span class="kl">${dstr(d)}</span><span class="kv">${t.am?`☀️${t.am} `:''} ${t.pm?`🌅${t.pm}`:''}</span></div>`;
+    });html+=`</div>`;
+  }
+  if(!ints.length)html+=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-txt">Nessun intervento nel periodo</div></div>`;
+  document.getElementById('reportContent').innerHTML=html;
+}
+
+function renderAlerts(){
+  const s=gset();if(document.getElementById('alertThreshold'))document.getElementById('alertThreshold').value=s.alertDays||14;
+  const{urg,wrn}=getAlerts();
+  let html='';
+  if(!urg.length&&!wrn.length){html=`<div class="empty"><div class="empty-ico">✅</div><div class="empty-txt">Nessun alert! Tutte le aree sono aggiornate.</div></div>`;}
+  else{
+    if(urg.length){
+      html+=`<div class="stitle">🚨 Urgenti (oltre ${Math.round((s.alertDays||14)*1.5)} giorni)</div>`;
+      urg.forEach(x=>{html+=`<div class="ali urg"><span class="ali-ico">🚨</span><div class="ali-txt"><div class="ali-nm">${TICON[x.area.tipo]||''} ${x.area.nome}</div><div class="ali-dy">${x.days===999?'Mai lavorata':x.days+' giorni senza intervento'} · ${x.area.via}</div></div></div>`;});
+    }
+    if(wrn.length){
+      html+=`<div class="stitle">⚠️ Attenzione (oltre ${s.alertDays||14} giorni)</div>`;
+      wrn.forEach(x=>{html+=`<div class="ali wrn"><span class="ali-ico">⚠️</span><div class="ali-txt"><div class="ali-nm">${TICON[x.area.tipo]||''} ${x.area.nome}</div><div class="ali-dy">${x.days} giorni senza intervento · ${x.area.via}</div></div></div>`;});
+    }
+  }
+  document.getElementById('alertList').innerHTML=html;
+}
+
+function renderLastInts(){
+  // unisci interventi e non-lavoro in un unico storico ordinato per data
+  const ints=gints().map(i=>({...i,_type:'int'}));
+  const nls=gnl().map(x=>({...x,_type:'nl'}));
+  const all=[...ints,...nls].sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id)).slice(0,10);
+  if(!all.length)return`<div style="font-size:13px;color:var(--tl);text-align:center;padding:8px">Nessun intervento o assenza registrata</div>`;
+  return all.map(r=>{
+    if(r._type==='nl'){
+      const icon=r.motivo==='ferie'?'🏖️':'🌧️';
+      const txt=r.motivo==='ferie'?'Ferie':'Pioggia';
+      const tl=r.turno==='pm'?'🌅':'☀️';
+      return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm" style="color:var(--bl)">${tl} ${icon} ${txt} — turno non lavorato</div><div class="hi-st">${icon}</div></div>`;
+    }
+    const a=AREAS.find(x=>x.id===r.areaId);
+    return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm">${a?.nome||'Area '+r.areaId} · ${r.turno==='pm'?'🌅':'☀️'}${r.ore?' · '+r.ore+'h':''}</div><div class="hi-st">${r.terminata?'✅':'🔄'}</div></div>`;
+  }).join('');
+}
+
+function exportCSV(){
+  const ints=gints();
+  const rows=[['Data','Giorno','Turno','ID Area','Nome Area','Indirizzo','Tipo','Superficie mq','Terminata','Ore impiegate','Note']];
+  ints.sort((a,b)=>a.data.localeCompare(b.data)).forEach(i=>{
+    const a=AREAS.find(x=>x.id===i.areaId)||{};const dt=new Date(i.data);
+    rows.push([dstr(i.data),GIORNI[dt.getDay()],i.turno==='pm'?'Pomeriggio':'Mattina',i.areaId,a.nome||'',a.via||'',TLBL[a.tipo]||'',a.mq||'',i.terminata?'Sì':'No',i.ore||0,i.note||'']);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`verde_grumo_nevano_${today()}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('.mo').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+window.addEventListener('DOMContentLoaded',()=>{
+  renderHome();
+  const s=gset();
+  if(document.getElementById('alertThreshold'))document.getElementById('alertThreshold').value=s.alertDays||14;
+  // Registra service worker per uso offline e installazione PWA
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+});
+</script>
+</body>
+</html>
