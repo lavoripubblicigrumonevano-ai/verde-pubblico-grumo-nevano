@@ -1,0 +1,39 @@
+{
+  "name": "Verde Pubblico - Grumo Nevano",
+  "short_name": "🌿 Verde GN",
+  "description": "App manutenzione verde pubblico Comune di Grumo Nevano",
+  "start_url": "./app_verde_grumo_nevano.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f8f1",
+  "theme_color": "#2e7d32",
+  "orientation": "portrait-primary",
+  "lang": "it",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
