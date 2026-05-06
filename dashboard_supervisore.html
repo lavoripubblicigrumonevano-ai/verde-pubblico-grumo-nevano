@@ -113,7 +113,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
-<div class="status-bar" id="status-bar">Auto-aggiornamento ogni 60 secondi</div>
+<div class="status-bar" id="status-bar">Auto-aggiornamento ogni 60s · Mattina: Lun-Ven · Pomeriggio: Mar-Gio</div>
 
 <script>
 const AREAS=[
@@ -197,8 +197,8 @@ function renderAlerts() {
         alerts.push({cls:'red', msg:'🔴 TURNO MATTINA non registrato — ore ' + `${h}:${String(m).padStart(2,'0')}`});
       }
     }
-    // Pomeriggio: lun/mer/ven dopo le 16:00
-    if ((dow===1||dow===3||dow===5) && h >= 16) {
+    // Pomeriggio: mar/gio dopo le 16:00
+    if ((dow===2||dow===4) && h >= 16) {
       const hasPm = todayInts.some(i => i.turno==='pm') || todayNL.some(n => n.turno==='pm')
                  || (shift && shift.data === today && shift.turno === 'pm');
       if (!hasPm) {
@@ -271,7 +271,7 @@ function renderWeek() {
     days.forEach(d => {
       const ds = isoDate(d);
       const dow = d.getDay();
-      const isPmDay = dow===1||dow===3||dow===5;
+      const isPmDay = dow===2||dow===4;
 
       // PM non disponibile mar/gio
       if (turno==='pm' && !isPmDay) {
