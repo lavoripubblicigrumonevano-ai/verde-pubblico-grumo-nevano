@@ -1,1 +1,1 @@
-{"ts": "1970-01-01T00:00:00.000Z", "ints": [], "nonlavoro": [], "sched": [], "shift": null}
+{"ts": "2026-05-06T23:18:48.218024Z", "ints": [{"id": "s3", "data": "2026-05-05", "turno": "pm", "areaId": 4, "terminata": true, "ore": 3, "note": ""}, {"id": "s4", "data": "2026-05-06", "turno": "am", "areaId": 8, "terminata": true, "ore": 5, "note": ""}], "nonlavoro": [{"id": "s1", "data": "2026-05-04", "turno": "am", "motivo": "ferie", "nota": ""}, {"id": "s2", "data": "2026-05-05", "turno": "am", "motivo": "altro", "nota": "Ritiro concimi"}], "sched": [], "shift": null}
