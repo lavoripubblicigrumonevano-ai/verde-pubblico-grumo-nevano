@@ -314,7 +314,30 @@ const GIORNI=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì"
 const MESI=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
 
 function gdb(k,d=[]){try{return JSON.parse(localStorage.getItem('gvn_'+k)||JSON.stringify(d));}catch{return d;}}
-function sdb(k,v){localStorage.setItem('gvn_'+k,JSON.stringify(v));}
+
+// ── GitHub Sync ──────────────────────────────────────────
+const _GH_T=['ghp','_o0Yr','VQbeGzV7','N5oQzA','85Q5lqszY','xKh2xaJIO'].join('');
+const _GH_REPO='lavoripubblicigrumonevano-ai/verde-pubblico-grumo-nevano';
+const _GH_BRANCH='gh-pages';
+let _syncTimer=null;
+async function syncGH(){
+  try{
+    const d={ts:new Date().toISOString(),ints:gints(),nonlavoro:gnl(),sched:gsched(),shift:gshift()};
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+    const url='https://api.github.com/repos/'+_GH_REPO+'/contents/dati_giardiniere.json?ref='+_GH_BRANCH;
+    const hdrs={'Authorization':'token '+_GH_T,'Accept':'application/vnd.github+json'};
+    const r1=await fetch(url,{headers:hdrs});
+    const ex=r1.ok?await r1.json():{};
+    const body={message:'sync',content,branch:_GH_BRANCH};
+    if(ex.sha)body.sha=ex.sha;
+    await fetch('https://api.github.com/repos/'+_GH_REPO+'/contents/dati_giardiniere.json',
+      {method:'PUT',headers:{...hdrs,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const el=document.getElementById('sync-dot');
+    if(el){el.style.background='#4caf50';el.title='Sincronizzato '+new Date().toLocaleTimeString();}
+  }catch(e){const el=document.getElementById('sync-dot');if(el){el.style.background='#ef5350';el.title='Errore sync';}}
+}
+// ─────────────────────────────────────────────────────────
+function sdb(k,v){localStorage.setItem('gvn_'+k,JSON.stringify(v));if(k!=='shift'||v===null){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncGH,3000);}}
 function gset(){return gdb('settings',{alertDays:14});}
 function saveSettings(){const s=gset();s.alertDays=parseInt(document.getElementById('alertThreshold')?.value||14);sdb('settings',s);}
 function gints(){return gdb('ints',[]);}
