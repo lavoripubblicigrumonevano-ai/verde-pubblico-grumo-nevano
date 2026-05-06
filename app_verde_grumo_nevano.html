@@ -51,6 +51,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .nl-banner{border-radius:var(--r16);padding:14px;margin-bottom:10px;text-align:center;}
 .nl-banner.ferie{background:linear-gradient(135deg,#42a5f5,#1565c0);color:#fff;}
 .nl-banner.pioggia{background:linear-gradient(135deg,#78909c,#37474f);color:#fff;}
+.nl-banner.altro{background:linear-gradient(135deg,#ab47bc,#6a1b9a);color:#fff;}
 .nl-banner h3{font-size:15px;margin-bottom:3px;}
 .nl-banner p{font-size:12px;opacity:.85;}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;}
@@ -139,6 +140,12 @@ select.fi{-webkit-appearance:none;}
 .empty-txt{font-size:13px;}
 .content::-webkit-scrollbar{width:3px;}
 .content::-webkit-scrollbar-thumb{background:var(--br);border-radius:3px;}
+/* Dashboard area chip */
+.dash-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:48px;gap:1px;}
+.dash-ico{font-size:17px;line-height:1;}
+.dash-key{font-size:8px;font-weight:800;color:#333;line-height:1;margin-top:-1px;}
+.dash-ok{font-size:11px;line-height:1;}
+.area-badge{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;font-size:18px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -149,7 +156,7 @@ select.fi{-webkit-appearance:none;}
     <div class="hdr-txt">
       <div class="hdr-comune">Comune di Grumo Nevano (NA)</div>
       <div class="hdr-title">🌿 Verde Pubblico</div>
-      <div class="hdr-sub">Ufficio Lavori Pubblici · Tel. 081 835 1111</div>
+      <div class="hdr-sub">Ufficio Ambiente - Settore V · Tel. 081 835 1111</div>
     </div>
   </div>
   <div class="hdr-date" id="hdrDate">📅 Caricamento...</div>
@@ -161,7 +168,6 @@ select.fi{-webkit-appearance:none;}
     <div id="homeSummary"></div>
     <div id="homeShift"></div>
     <div id="homeScheduled"></div>
-    <div id="homeAlerts"></div>
   </div>
 
   <div class="vw" id="vw-turno">
@@ -190,23 +196,6 @@ select.fi{-webkit-appearance:none;}
     <button class="btn btn-b" onclick="exportCSV()">📥 Esporta Report CSV/Excel</button>
   </div>
 
-  <div class="vw" id="vw-alert">
-    <div class="card">
-      <div class="ct">⚙️ Soglia alert</div>
-      <div class="fg">
-        <label class="fl">Giorni senza intervento prima dell'alert</label>
-        <select class="fi" id="alertThreshold" onchange="saveSettings();renderAlerts()">
-          <option value="7">7 giorni</option>
-          <option value="10">10 giorni</option>
-          <option value="14" selected>14 giorni</option>
-          <option value="21">21 giorni</option>
-          <option value="30">30 giorni</option>
-        </select>
-      </div>
-    </div>
-    <div id="alertList"></div>
-  </div>
-
 </div>
 
 <nav class="nav">
@@ -222,21 +211,19 @@ select.fi{-webkit-appearance:none;}
   <button class="nb" id="nb-report" onclick="navigate('report')">
     <span class="ni">📊</span><span>Report</span>
   </button>
-  <button class="nb" id="nb-alert" onclick="navigate('alert')">
-    <span class="ni">🔔</span><span>Alert</span>
-  </button>
 </nav>
 
 <div class="pftr">
   🔒 Documento ad uso interno esclusivo — Le informazioni contenute non devono essere divulgate a terzi.<br>
-  Trattamento dati ai sensi D.Lgs. 196/2003 e Reg. UE 679/2016 (GDPR) · Comune di Grumo Nevano
+  Trattamento dati ai sensi D.Lgs. 196/2003 e Reg. UE 679/2016 (GDPR) · Comune di Grumo Nevano<br>
+  <span style="opacity:.65;">v 1.0</span>
 </div>
 
 <div class="mo" id="moConferma">
   <div class="mb">
     <div class="mt">Conferma selezione sito</div>
     <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-size:36px;margin-bottom:8px;">📍</div>
+      <div style="font-size:36px;margin-bottom:8px;" id="confAreaIco">📍</div>
       <div style="font-size:17px;font-weight:700;color:var(--gd);margin-bottom:4px;" id="confAreaNome"></div>
       <div style="font-size:13px;color:var(--tl);margin-bottom:14px;" id="confAreaVia"></div>
       <div style="background:var(--gp);border-radius:12px;padding:12px;margin-bottom:6px;">
@@ -268,25 +255,55 @@ select.fi{-webkit-appearance:none;}
 </div>
 
 <script>
-// Aree estratte dal censimento ufficiale (solo quelle con campo NOME valorizzato)
+// ── AREE ─────────────────────────────────────────────────────────────────────
 const AREAS=[
-  {id:1,  via:"Via Vespucci snc",       nome:"Scuola Via Vespucci",              tipo:"scuola", mq:null,  ist:"I.C. Pascoli"},
-  {id:2,  via:"Via Giotto 2 - Deledda", nome:"Scuola Via Giotto",               tipo:"scuola", mq:155,   ist:"I.C. Pascoli"},
-  {id:3,  via:"Via XXIV Maggio 58",     nome:"Scuola Via XXIV Maggio",          tipo:"scuola", mq:805,   ist:"I.C. Pascoli"},
-  {id:4,  via:"Via Quintavalle",        nome:"Scuola Via Quintavalle",          tipo:"scuola", mq:1010,  ist:"I.C. Matteotti"},
-  {id:5,  via:"Via Meucci",             nome:"Scuola Via Meucci",               tipo:"scuola", mq:1730,  ist:"I.C. Matteotti"},
-  {id:6,  via:"Via Baracca 23",         nome:"Scuola Via Baracca",              tipo:"scuola", mq:397,   ist:"I.C. Matteotti"},
-  {id:7,  via:"Via Giotto 4",           nome:"Sede Comunale",                   tipo:"pubbl",  mq:60,    ist:null},
-  {id:8,  via:"Corso Mazzini",          nome:"Villa Comunale (Corso Mazzini)",  tipo:"pubbl",  mq:7400,  ist:null},
-  {id:9,  via:"Via Meucci",             nome:"Orto Cirilliano",                 tipo:"pubbl",  mq:3500,  ist:null},
-  {id:10, via:"Via Meucci",             nome:"Parco Giochi Caduti di Nassirya", tipo:"pubbl",  mq:1000,  ist:null},
-  {id:11, via:"Via C.A. Dalla Chiesa",  nome:"Campo Sportivo",                  tipo:"sport",  mq:29720, ist:null},
-  {id:13, via:"Via C.A. Dalla Chiesa",  nome:"Villa Comunale (campo sportivo)", tipo:"sport",  mq:null,  ist:null},
-  {id:29, via:"Via Carabinieri",        nome:"Comando Carabinieri",             tipo:"ist",    mq:null,  ist:null},
+  {id:1,  via:"Via Vespucci snc",       nome:"Scuola Via Vespucci",             tipo:"scuola", mq:null,  ist:"I.C. Pascoli"},
+  {id:2,  via:"Via Giotto 2 - Deledda", nome:"Scuola Via Giotto",              tipo:"scuola", mq:155,   ist:"I.C. Pascoli"},
+  {id:3,  via:"Via XXIV Maggio 58",     nome:"Scuola Via XXIV Maggio",         tipo:"scuola", mq:805,   ist:"I.C. Pascoli"},
+  {id:4,  via:"Via Quintavalle",        nome:"Scuola Via Quintavalle",         tipo:"scuola", mq:1010,  ist:"I.C. Matteotti"},
+  {id:5,  via:"Via Meucci",             nome:"Scuola Via Meucci",              tipo:"scuola", mq:1730,  ist:"I.C. Matteotti"},
+  {id:6,  via:"Via Baracca 23",         nome:"Scuola Via Baracca",             tipo:"scuola", mq:397,   ist:"I.C. Matteotti"},
+  {id:7,  via:"Via Giotto 4",           nome:"Sede Comunale",                  tipo:"pubbl",  mq:60,    ist:null},
+  {id:8,  via:"Corso Mazzini",          nome:"Villa Comunale (Corso Mazzini)", tipo:"pubbl",  mq:7400,  ist:null},
+  {id:9,  via:"Via Meucci",             nome:"Orto Cirilliano",                tipo:"pubbl",  mq:3500,  ist:null},
+  {id:10, via:"Via Meucci",             nome:"Parco Giochi Caduti di Nassirya",tipo:"pubbl",  mq:1000,  ist:null},
+  {id:11, via:"Via C.A. Dalla Chiesa",  nome:"Campo Sportivo",                 tipo:"sport",  mq:29720, ist:null},
+  {id:13, via:"Via C.A. Dalla Chiesa",  nome:"Villa Comunale (campo sportivo)",tipo:"sport",  mq:null,  ist:null},
+  {id:29, via:"Via Carabinieri",        nome:"Comando Carabinieri",            tipo:"ist",    mq:null,  ist:null},
 ];
 
+// Icone generiche per tipo
 const TICON={scuola:"🏫",pubbl:"🌳",sport:"⚽",piazza:"🏛️",priv:"🔒",ist:"🚨"};
 const TLBL={scuola:"Scuola",pubbl:"Area pubblica",sport:"Area sportiva",piazza:"Piazza",priv:"Gest. privata",ist:"Istituzionale"};
+
+// Icone SPECIFICHE per area (ico=emoji, key=sigla, bg=colore sfondo badge)
+const AICON={
+  1: {ico:"🏫", key:"V",   bg:"#fff3e0", lbl:"Vespucci"},        // Scuola Vespucci
+  2: {ico:"🎨", key:"G",   bg:"#fff3e0", lbl:"Giotto"},          // Scuola Giotto (pittore)
+  3: {ico:"📅", key:"24",  bg:"#fff3e0", lbl:"XXIV Mag."},       // Scuola XXIV Maggio
+  4: {ico:"🏫", key:"Q",   bg:"#fff3e0", lbl:"Quintavalle"},     // Scuola Quintavalle
+  5: {ico:"📞", key:"MS",  bg:"#fff3e0", lbl:"Meucci S."},       // Scuola Meucci (Meucci=telefono)
+  6: {ico:"✈️", key:"B",   bg:"#fff3e0", lbl:"Baracca"},         // Scuola Baracca (aviatore)
+  7: {ico:"🏛️", key:"",   bg:"#e3f2fd", lbl:"Sede Com."},       // Sede Comunale
+  8: {ico:"🌹", key:"CM",  bg:"#e8f5e9", lbl:"Villa CM"},        // Villa Comunale Mazzini
+  9: {ico:"🌱", key:"",    bg:"#e8f5e9", lbl:"Orto Cir."},       // Orto Cirilliano
+  10:{ico:"🕊️", key:"N",   bg:"#f3e5f5", lbl:"Nassirya"},        // Parco Nassirya
+  11:{ico:"⚽", key:"CS",  bg:"#e3f2fd", lbl:"Campo Sp."},       // Campo Sportivo
+  13:{ico:"🌿", key:"VC",  bg:"#e8f5e9", lbl:"Villa CS"},        // Villa Comunale (campo sp.)
+  29:{ico:"👮", key:"",    bg:"#ffebee", lbl:"Carabinieri"},     // Carabinieri
+};
+
+// Restituisce HTML badge area (piccolo, per dashboard)
+function areaBadge(areaId, done){
+  const ai=AICON[areaId]||{ico:TICON[AREAS.find(x=>x.id===areaId)?.tipo]||'📍', key:'', bg:'#f5f5f5'};
+  const doneHtml=done===true?'<div class="dash-ok">✅</div>':done===false?'<div class="dash-ok">🔄</div>':'';
+  return `<div class="dash-chip">
+    <div class="dash-ico">${ai.ico}</div>
+    ${ai.key?`<div class="dash-key">${ai.key}</div>`:''}
+    ${doneHtml}
+  </div>`;
+}
+
 const GIORNI=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
 const MESI=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
 
@@ -305,7 +322,6 @@ function registraNonLavoro(turno,motivo){
   const txt=motivo==='ferie'?'Ferie':'Pioggia';
   if(!confirm(`${icon} Confermi di segnare il turno ${label} come "${txt}"?\nIl turno non verrà lavorato.`))return;
   const nl=gnl();
-  // rimuovi eventuale record esistente per stesso giorno+turno
   const idx=nl.findIndex(x=>x.data===today()&&x.turno===turno);
   if(idx>=0)nl.splice(idx,1);
   nl.push({id:uid(),data:today(),turno,motivo});
@@ -348,35 +364,21 @@ function navigate(v){
   else if(v==='turno')renderTurno();
   else if(v==='aree')renderAree();
   else if(v==='report')renderReport();
-  else if(v==='alert')renderAlerts();
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-function getAlerts(){
-  const alertDays=gset().alertDays||14;
-  const urg=[],wrn=[];
-  AREAS.forEach(a=>{
-    const ai=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data));
-    const last=ai[0];
-    const days=last?ddiff(last.data,today()):999;
-    if(a.tipo==='priv')return;
-    if(days>alertDays*1.5)urg.push({area:a,days,last});
-    else if(days>alertDays)wrn.push({area:a,days,last});
-  });
-  return{urg:urg.sort((a,b)=>b.days-a.days),wrn:wrn.sort((a,b)=>b.days-a.days)};
-}
-
 function renderHome(){
   const t=today();const dt=new Date();
   document.getElementById('hdrDate').innerHTML=`📅 ${GIORNI[dt.getDay()]} ${dt.getDate()} ${MESI[dt.getMonth()]} ${dt.getFullYear()}`;
-  const wints=getWInts();const mints=getMInts();const al=getAlerts();
+  const wints=getWInts();const mints=getMInts();
+  const totOreW=wints.reduce((s,i)=>s+(i.ore||0),0);
   document.getElementById('homeSummary').innerHTML=`<div class="sg">
     <div class="sb"><div class="sv">${wints.length}</div><div class="sl">🌿 Interventi settimana</div></div>
     <div class="sb"><div class="sv">${mints.length}</div><div class="sl">📅 Interventi mese</div></div>
-    <div class="sb ${al.urg.length>0?'rd':''}"><div class="sv">${al.urg.length+al.wrn.length}</div><div class="sl">🔔 Alert attivi</div></div>
-    <div class="sb bl"><div class="sv">${AREAS.length}</div><div class="sl">📍 Aree totali</div></div>
+    <div class="sb bl"><div class="sv">${totOreW.toFixed(0)}</div><div class="sl">⏱️ Ore questa settimana</div></div>
+    <div class="sb"><div class="sv">${AREAS.length}</div><div class="sl">📍 Aree totali</div></div>
   </div>`;
 
   const shift=gshift();
@@ -388,16 +390,15 @@ function renderHome(){
     </div>
     <button class="btn btn-d" onclick="navigate('turno')">🏁 Fine Turno — Inserisci Esiti</button>`;
   } else {
-    // mostra banner ferie/pioggia già segnati oggi
     const nlOggi=gnl().filter(x=>x.data===t);
     let btns='';
     nlOggi.forEach(x=>{
       const isPm=x.turno==='pm';
-      const icon=x.motivo==='ferie'?'🏖️':'🌧️';
-      const txt=x.motivo==='ferie'?'Ferie':'Pioggia';
+      const icon=x.motivo==='ferie'?'🏖️':x.motivo==='pioggia'?'🌧️':'📋';
+      const txt=x.motivo==='ferie'?'Ferie':x.motivo==='pioggia'?'Pioggia':(x.nota||'Attività interna');
       btns+=`<div class="nl-banner ${x.motivo}" style="margin-bottom:8px;">
         <h3>${icon} Turno ${isPm?'Pomeriggio':'Mattina'}: ${txt}</h3>
-        <p>Nessun intervento previsto per questo turno</p>
+        <p>Nessun intervento di sfalcio per questo turno</p>
       </div>`;
     });
     const nlTurni=nlOggi.map(x=>x.turno);
@@ -410,16 +411,9 @@ function renderHome(){
   const sched=gsched().filter(s=>s.data===t);
   if(sched.length>0){
     let sh=`<div class="card"><div class="ct">📋 Aree programmate oggi</div>`;
-    sched.forEach(s=>{const a=AREAS.find(x=>x.id===s.areaId);if(a)sh+=`<div class="ai prog"><span style="font-size:18px">📌</span><div class="ain"><div class="an">${a.nome}</div><div class="ad">${a.via}</div></div><span class="abg pr">${s.turno==='pm'?'🌅 Pomeriggio':'☀️ Mattina'}</span></div>`;});
+    sched.forEach(s=>{const a=AREAS.find(x=>x.id===s.areaId);if(a){const ai=AICON[a.id];sh+=`<div class="ai prog"><span style="font-size:18px">${ai?ai.ico:'📌'}</span><div class="ain"><div class="an">${a.nome}</div><div class="ad">${a.via}</div></div><span class="abg pr">${s.turno==='pm'?'🌅 Pomeriggio':'☀️ Mattina'}</span></div>`;}});
     sh+=`</div>`;document.getElementById('homeScheduled').innerHTML=sh;
   } else document.getElementById('homeScheduled').innerHTML='';
-
-  if(al.urg.length>0){
-    let ah=`<div class="card"><div class="ct">🚨 Alert urgenti</div>`;
-    al.urg.slice(0,3).forEach(x=>{ah+=`<div class="ali urg"><span class="ali-ico">🚨</span><div class="ali-txt"><div class="ali-nm">${x.area.nome}</div><div class="ali-dy">${x.days===999?'Mai lavorata':x.days+' gg senza intervento'}</div></div></div>`;});
-    if(al.urg.length>3)ah+=`<button class="btn btn-d" style="margin-top:6px;padding:8px" onclick="navigate('alert')">Vedi tutti (${al.urg.length})</button>`;
-    ah+=`</div>`;document.getElementById('homeAlerts').innerHTML=ah;
-  } else document.getElementById('homeAlerts').innerHTML='';
 }
 
 function renderTurno(){
@@ -433,15 +427,14 @@ function turnoBlock(turno){
   const isPm=turno==='pm';
   const avail=isPm?isAftn(t):isMorn(t);
   if(!avail) return `<p style="font-size:12px;color:var(--tl);margin-bottom:8px">⚪ Turno ${isPm?'pomeriggio':'mattina'} non disponibile oggi</p>`;
-  // controlla se già segnato ferie/pioggia
   const nl=gnl().find(x=>x.data===t&&x.turno===turno);
   if(nl){
-    const icon=nl.motivo==='ferie'?'🏖️':'🌧️';
-    const txt=nl.motivo==='ferie'?'Ferie':'Pioggia';
+    const icon=nl.motivo==='ferie'?'🏖️':nl.motivo==='pioggia'?'🌧️':'📋';
+    const txt=nl.motivo==='ferie'?'Ferie':nl.motivo==='pioggia'?'Pioggia':(nl.nota||'Attività interna');
     const label=isPm?'Pomeriggio':'Mattina';
     return `<div class="nl-banner ${nl.motivo}" style="margin-bottom:8px;">
       <h3>${icon} Turno ${label}: ${txt}</h3>
-      <p>Segnato oggi — nessun intervento eseguito</p>
+      <p>Segnato oggi — nessun intervento di sfalcio eseguito</p>
     </div>
     <button class="btn btn-gr" style="margin-bottom:8px" onclick="annullaNonLavoro('${turno}')">↩️ Annulla segnalazione</button>`;
   }
@@ -474,21 +467,20 @@ function renderTurnoIdle(){
 }
 
 function setupShift(turno){
-  curAree=[];   // reset — la selezione avviene toccando il sito in renderSetup
+  curAree=[];
   renderSetup(turno);
 }
 
-// ── 1 SOLO SITO PER TURNO ──────────────────────────────────────────────────
 const DURATA_TURNO={am:5,pm:3};
 
-// curAree[0] = l'unico sito selezionato (array mantenuto per compatibilità storage)
 function selectSito(id,turno){
   const a=AREAS.find(x=>x.id===id);
   if(!a)return;
   const isPm=turno==='pm';
   const durata=DURATA_TURNO[turno]||5;
   const turnoLbl=isPm?'🌅 Pomeriggio (3h)':'☀️ Mattina (5h)';
-  // mostra modal di conferma
+  const ai=AICON[id];
+  document.getElementById('confAreaIco').textContent=ai?ai.ico:TICON[a.tipo]||'📍';
   document.getElementById('confAreaNome').textContent=a.nome;
   document.getElementById('confAreaVia').textContent=a.via+(a.mq?' · '+a.mq.toLocaleString('it')+' m²':'');
   document.getElementById('confTurnoLbl').textContent=turnoLbl;
@@ -504,7 +496,6 @@ function selectSito(id,turno){
 function renderSetup(turno){
   const isPm=turno==='pm';
   const durata=DURATA_TURNO[turno]||5;
-  // sito riprogrammato da turno precedente?
   const sched=gsched().find(s=>s.data===today()&&s.turno===turno);
 
   let noticeHtml='';
@@ -543,11 +534,14 @@ function sitoItem(a,turno,sched){
   const alertDays=gset().alertDays||14;
   const isAlr=days===null||days>alertDays;
   const lastTxt=last?`Ultimo: ${dstr(last.data)} (${days}gg fa)`:'⚠️ Mai lavorata';
+  const ai=AICON[a.id];
+  const icoHtml=ai?`<div class="area-badge" style="background:${ai.bg};font-size:18px;">${ai.ico}${ai.key?`<span style="font-size:9px;font-weight:800;">${ai.key}</span>`:''}</div>`
+                   :`<div style="font-size:18px;">${TICON[a.tipo]||'📍'}</div>`;
   return `<div class="ai ${a.tipo==='scuola'?'scuola':''} ${isProg?'prog':''} ${isAlr&&!isProg?'alr':''}"
     onclick="selectSito(${a.id},'${turno}')" style="cursor:pointer;">
-    <div class="achk" style="font-size:18px;">${isProg?'📌':'▶️'}</div>
+    ${icoHtml}
     <div class="ain">
-      <div class="an">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+      <div class="an">${a.nome}</div>
       <div class="ad">${a.via}${a.mq?` · ${a.mq.toLocaleString('it')} m²`:''}</div>
       <div class="ad">${lastTxt}</div>
     </div>
@@ -560,7 +554,7 @@ function confirmStart(turno){
   if(!curAree.length){alert('⚠️ Seleziona un sito!');return;}
   const now=new Date();
   const durata=DURATA_TURNO[turno]||5;
-  sdb('shift',{id:uid(),data:today(),turno,durata,aree:[curAree[0]], // sempre 1 sito
+  sdb('shift',{id:uid(),data:today(),turno,durata,aree:[curAree[0]],
     inizioOra:`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`});
   renderTurnoActive(gshift());
 }
@@ -570,6 +564,7 @@ function renderTurnoActive(shift){
   const durata=DURATA_TURNO[shift.turno]||5;
   const a=AREAS.find(x=>x.id===shift.aree[0]);
   if(!a)return;
+  const ai=AICON[a.id];
   document.getElementById('turnoContent').innerHTML=`
   <div class="sbanner ${isPm?'pm':''}">
     <h3>${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} IN CORSO 🟢</h3>
@@ -578,9 +573,9 @@ function renderTurnoActive(shift){
   <div class="card">
     <div class="ct">📍 Sito in lavorazione</div>
     <div class="ai sel">
-      <div class="achk">✓</div>
+      <div class="area-badge" style="background:${ai?ai.bg:'var(--gp)'};font-size:18px;">${ai?ai.ico:TICON[a.tipo]||'📍'}${ai?.key?`<span style="font-size:9px;font-weight:800;">${ai.key}</span>`:''}</div>
       <div class="ain">
-        <div class="an" style="font-size:15px;">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+        <div class="an" style="font-size:15px;">${a.nome}</div>
         <div class="ad">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</div>
         <div class="ad" style="margin-top:3px;">⏱️ Tutto il turno dedicato a questo sito (${durata}h)</div>
       </div>
@@ -594,7 +589,6 @@ function cancelShift(){
   if(confirm('Annullare il turno? I dati non verranno salvati.')){sdb('shift',null);renderTurnoIdle();}
 }
 
-// ── FINE TURNO: 1 sito, ore = intera durata turno ──────────────────────────
 function openFine(){
   const shift=gshift();if(!shift)return;
   const isPm=shift.turno==='pm';
@@ -603,14 +597,19 @@ function openFine(){
   if(!a)return;
   fineData={};
   fineData[a.id]={term:null,ore:durata};
+  const ai=AICON[a.id];
 
   document.getElementById('fineContent').innerHTML=`
   <div style="background:var(--gp);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--tm);margin-bottom:14px;text-align:center;">
     ${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} · <strong>${durata} ore</strong> dedicate a questo sito
   </div>
   <div class="ci" id="ci-${a.id}">
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">${TICON[a.tipo]||'📍'} ${a.nome}<br>
-      <span style="font-size:12px;color:var(--tl);font-weight:400">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</span>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div class="area-badge" style="background:${ai?ai.bg:'var(--gp)'};font-size:20px;">${ai?ai.ico:TICON[a.tipo]||'📍'}${ai?.key?`<span style="font-size:9px;font-weight:800;">${ai.key}</span>`:''}</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;">${a.nome}</div>
+        <div style="font-size:12px;color:var(--tl);">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</div>
+      </div>
     </div>
     <p style="font-size:13px;color:var(--tm);margin-bottom:10px;font-weight:600;">Il sito è stato completato?</p>
     <div style="display:flex;gap:10px;margin-bottom:14px;">
@@ -647,7 +646,6 @@ function confermaTurno(){
   ints.push({id:uid(),data:t,turno:shift.turno,areaId:id,terminata:d.term,ore:durata,note});
 
   if(!d.term){
-    // riprogramma al prossimo turno disponibile
     const isSc=a?.tipo==='scuola';
     const nxtD=nextWD(t,isSc);
     const nxtT=isSc?'pm':'am';
@@ -655,7 +653,6 @@ function confermaTurno(){
     if(ex>=0)sched.splice(ex,1);
     sched.push({areaId:id,data:nxtD,turno:nxtT,motivo:'non_terminata'});
   } else {
-    // rimuovi dalla programmazione se completato
     const ex=sched.findIndex(s=>s.areaId===id&&s.data===t);
     if(ex>=0)sched.splice(ex,1);
   }
@@ -673,22 +670,28 @@ function confermaTurno(){
   renderTurnoIdle();navigate('home');
 }
 
+// ── AREE ─────────────────────────────────────────────────────────────────────
 function renderAree(){
   const q=(document.getElementById('areeSearch')?.value||'').toLowerCase();
-  const alert=gset().alertDays||14;
+  const alertD=gset().alertDays||14;
   const areas=AREAS.filter(a=>!q||a.nome.toLowerCase().includes(q)||a.via.toLowerCase().includes(q));
   let html=areas.map(a=>{
-    const ai=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data));
-    const last=ai[0];const days=last?ddiff(last.data,today()):null;
-    const isAlr=days===null||days>alert;
+    const ai_int=gints().filter(i=>i.areaId===a.id).sort((x,y)=>y.data.localeCompare(x.data));
+    const last=ai_int[0];const days=last?ddiff(last.data,today()):null;
+    const isAlr=days===null||days>alertD;
     let stbdg=last?
       (days===0?`<span class="bdg bdg-g">Oggi</span>`:
        days<=7?`<span class="bdg bdg-g">${days}gg fa</span>`:
-       days<=alert?`<span class="bdg bdg-o">${days}gg fa</span>`:
+       days<=alertD?`<span class="bdg bdg-o">${days}gg fa</span>`:
        `<span class="bdg bdg-r">${days}gg fa ⚠️</span>`):
       `<span class="bdg bdg-r">Mai ⚠️</span>`;
+    const ai=AICON[a.id];
+    const icoHtml=ai
+      ?`<div class="area-badge" style="background:${ai.bg};font-size:19px;width:42px;height:42px;">${ai.ico}${ai.key?`<span style="font-size:8px;font-weight:800;">${ai.key}</span>`:''}</div>`
+      :`<div style="font-size:22px;">${TICON[a.tipo]||'📍'}</div>`;
     return `<div class="ai ${isAlr?'alr':''}" onclick="showArea(${a.id})">
-      <div class="ain"><div class="an">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+      ${icoHtml}
+      <div class="ain"><div class="an">${a.nome}</div>
       <div class="ad">${a.via}${a.mq?` · ${a.mq.toLocaleString('it')} m²`:''}</div>
       <div class="ad">${TLBL[a.tipo]||a.tipo}</div></div>
       <div style="text-align:right;flex-shrink:0;">${stbdg}${a.tipo==='scuola'?`<br><span class="abg sc" style="margin-top:3px;display:inline-block">🏫</span>`:''}
@@ -699,16 +702,20 @@ function renderAree(){
 
 function showArea(id){
   const a=AREAS.find(x=>x.id===id);if(!a)return;
-  const ai=gints().filter(i=>i.areaId===id).sort((x,y)=>y.data.localeCompare(x.data));
-  const last=ai[0];const days=last?ddiff(last.data,today()):null;
-  const totOre=ai.reduce((s,i)=>s+(i.ore||0),0);
+  const ai_int=gints().filter(i=>i.areaId===id).sort((x,y)=>y.data.localeCompare(x.data));
+  const last=ai_int[0];const days=last?ddiff(last.data,today()):null;
+  const totOre=ai_int.reduce((s,i)=>s+(i.ore||0),0);
   const kpi=a.mq&&totOre>0?(totOre/a.mq*60).toFixed(2):null;
-  let hist=ai.slice(0,10).map(i=>`<div class="hi"><div class="hi-dt">${dstr(i.data)}</div>
+  const ai=AICON[a.id];
+  let hist=ai_int.slice(0,10).map(i=>`<div class="hi"><div class="hi-dt">${dstr(i.data)}</div>
     <div class="hi-nm">${i.turno==='pm'?'🌅 Pm':'☀️ Am'}${i.ore?` · ${i.ore}h`:''}${i.note?` · ${i.note}`:''}</div>
     <div class="hi-st">${i.terminata?'✅':'🔄'}</div></div>`).join('');
   if(!hist)hist=`<div style="color:var(--tl);font-size:13px;text-align:center;padding:10px">Nessun intervento registrato</div>`;
   document.getElementById('areaContent').innerHTML=`
-  <div class="mt">${TICON[a.tipo]||'📍'} ${a.nome}</div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <div class="area-badge" style="background:${ai?ai.bg:'var(--gp)'};font-size:26px;width:56px;height:56px;">${ai?ai.ico:TICON[a.tipo]||'📍'}${ai?.key?`<span style="font-size:11px;font-weight:800;">${ai.key}</span>`:''}</div>
+    <div class="mt" style="text-align:left;margin-bottom:0;">${a.nome}</div>
+  </div>
   <div class="card" style="margin-bottom:10px">
     <div class="krow"><span class="kl">📍 Indirizzo</span><span class="kv">${a.via}</span></div>
     <div class="krow"><span class="kl">🏷️ Tipo</span><span class="kv">${TLBL[a.tipo]||a.tipo}</span></div>
@@ -716,7 +723,7 @@ function showArea(id){
     ${a.ist?`<div class="krow"><span class="kl">🏫 Istituto</span><span class="kv">${a.ist}</span></div>`:''}
     ${last?`<div class="krow"><span class="kl">🗓️ Ultimo interv.</span><span class="kv">${dstr(last.data)} (${days}gg fa)</span></div>`:
             `<div class="krow"><span class="kl">🗓️ Ultimo interv.</span><span class="kv" style="color:var(--rd)">Mai lavorata</span></div>`}
-    <div class="krow"><span class="kl">🔢 Tot. interventi</span><span class="kv">${ai.length}</span></div>
+    <div class="krow"><span class="kl">🔢 Tot. interventi</span><span class="kv">${ai_int.length}</span></div>
     <div class="krow"><span class="kl">⏱️ Ore totali</span><span class="kv">${totOre.toFixed(1)}h</span></div>
     ${kpi?`<div class="krow"><span class="kl">📊 KPI (min/100m²)</span><span class="kv">${kpi} min/100m²</span></div>`:''}
   </div>
@@ -725,6 +732,7 @@ function showArea(id){
   openModal('moArea');
 }
 
+// ── REPORT ───────────────────────────────────────────────────────────────────
 function setRP(p,btn){
   rpPeriod=p;
   document.querySelectorAll('.rp-b').forEach(b=>b.classList.remove('act'));
@@ -744,78 +752,70 @@ function getPInts(){
   if(rpPeriod==='trim'){const d=new Date(t);d.setMonth(d.getMonth()-3);return gints().filter(i=>i.data>=d.toISOString().slice(0,10));}
   return gints().filter(i=>i.data.startsWith(t.slice(0,4)));
 }
-
 function getPNl(){
   const t=today();
-  if(rpPeriod==='sett'){const w=getWInts();const wDates=new Set(w.map(i=>i.data));const allNl=gnl();return allNl.filter(x=>{const dt=new Date(x.data);const dow=dt.getDay();return dt>=new Date([...wDates].sort()[0]||t)&&x.data<=t;});}
+  if(rpPeriod==='sett'){const mo=getMonLun();return gnl().filter(x=>x.data>=mo&&x.data<=t);}
   if(rpPeriod==='mese')return gnl().filter(x=>x.data.startsWith(today().slice(0,7)));
   if(rpPeriod==='trim'){const d=new Date(today());d.setMonth(d.getMonth()-3);return gnl().filter(x=>x.data>=d.toISOString().slice(0,10));}
   return gnl().filter(x=>x.data.startsWith(today().slice(0,4)));
-}
-
-function buildWeekDashboard(){
-  // Dashboard settimanale: griglia Lun-Ven × Mattina/Pomeriggio
-  const wints=getWInts();
-  const wnl=gnl().filter(x=>{
-    const d=new Date(x.data);const dw=d.getDay();
-    return dw>=1&&dw<=5&&x.data>=getMonLun()&&x.data<=today();
-  });
-  const DAYS_IT=['Lun','Mar','Mer','Gio','Ven'];
-  // calcola lunedì della settimana corrente
-  const monStr=getMonLun();
-  let html=`<div class="card"><div class="ct">📅 Dashboard settimana corrente</div>`;
-  // tabella giorni
-  html+=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
-    <tr>
-      <th style="padding:5px 4px;background:var(--gp);border-radius:6px;"></th>
-      ${DAYS_IT.map((d,i)=>{
-        const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
-        const isToday=dt.toISOString().slice(0,10)===today();
-        return `<th style="padding:5px 4px;text-align:center;background:${isToday?'var(--gl)':'var(--gp)'};color:${isToday?'#fff':'var(--tm)'};border-radius:6px;">${d}<br><span style="font-size:9px;font-weight:400;">${dt.getDate()}/${dt.getMonth()+1}</span></th>`;
-      }).join('')}
-    </tr>
-    ${['am','pm'].map(turno=>{
-      const lbl=turno==='am'?'☀️ Matt.':'🌅 Pom.';
-      return `<tr>
-        <td style="padding:5px 4px;font-weight:600;color:var(--tm);white-space:nowrap;">${lbl}</td>
-        ${[0,1,2,3,4].map(i=>{
-          const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
-          const ds=dt.toISOString().slice(0,10);
-          const dw=dt.getDay();
-          // pomeriggio solo mar(2) e gio(4)
-          if(turno==='pm'&&dw!==2&&dw!==4){
-            return `<td style="padding:5px 4px;text-align:center;background:#f5f5f5;border-radius:6px;color:#bbb;">—</td>`;
-          }
-          const nl=wnl.find(x=>x.data===ds&&x.turno===turno);
-          if(nl){
-            const ico=nl.motivo==='ferie'?'🏖️':'🌧️';
-            return `<td style="padding:5px 4px;text-align:center;background:#e3f2fd;border-radius:6px;">${ico}</td>`;
-          }
-          const dayInts=wints.filter(x=>x.data===ds&&x.turno===turno);
-          if(!dayInts.length){
-            const isPast=ds<today();
-            return `<td style="padding:5px 4px;text-align:center;background:${isPast?'var(--rdp)':'#fafafa'};border-radius:6px;">${isPast?'❌':''}</td>`;
-          }
-          const done=dayInts[0].terminata;
-          const a=AREAS.find(x=>x.id===dayInts[0].areaId);
-          const short=a?a.nome.split(' ').slice(0,2).join(' '):'';
-          return `<td style="padding:5px 4px;text-align:center;background:${done?'var(--gp)':'var(--orp)'};border-radius:6px;" title="${a?a.nome:''}">${done?'✅':'🔄'}<br><span style="font-size:9px;color:var(--tm)">${short}</span></td>`;
-        }).join('')}
-      </tr>`;
-    }).join('')}
-  </table></div>`;
-  // legenda
-  html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;color:var(--tl);">
-    <span>✅ Completato</span><span>🔄 In corso</span><span>❌ Non eseguito</span><span>🏖️ Ferie</span><span>🌧️ Pioggia</span><span>— Non previsto</span>
-  </div>`;
-  html+=`</div>`;
-  return html;
 }
 
 function getMonLun(){
   const t=new Date(today());const dw=t.getDay();
   const mo=new Date(t);mo.setDate(t.getDate()-(dw===0?6:dw-1));
   return mo.toISOString().slice(0,10);
+}
+
+function buildWeekDashboard(){
+  const wints=getWInts();
+  const monStr=getMonLun();
+  const wnl=gnl().filter(x=>x.data>=monStr&&x.data<=today());
+  const DAYS_IT=['Lun','Mar','Mer','Gio','Ven'];
+
+  let html=`<div class="card"><div class="ct">📅 Dashboard settimana corrente</div>`;
+  html+=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:12px;">
+    <tr>
+      <th style="padding:4px 3px;background:var(--gp);border-radius:6px;min-width:42px;font-size:10px;color:var(--tm);"></th>
+      ${DAYS_IT.map((d,i)=>{
+        const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
+        const isToday=dt.toISOString().slice(0,10)===today();
+        return `<th style="padding:4px 3px;text-align:center;min-width:46px;background:${isToday?'var(--gl)':'var(--gp)'};color:${isToday?'#fff':'var(--tm)'};border-radius:6px;font-size:10px;">${d}<br><span style="font-weight:400;">${dt.getDate()}/${dt.getMonth()+1}</span></th>`;
+      }).join('')}
+    </tr>
+    ${['am','pm'].map(turno=>{
+      const lbl=turno==='am'?'☀️<br>Matt.':'🌅<br>Pom.';
+      return `<tr>
+        <td style="padding:4px 3px;font-weight:600;color:var(--tm);white-space:nowrap;font-size:10px;text-align:center;">${lbl}</td>
+        ${[0,1,2,3,4].map(i=>{
+          const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
+          const ds=dt.toISOString().slice(0,10);
+          const dw=dt.getDay();
+          if(turno==='pm'&&dw!==2&&dw!==4){
+            return `<td style="padding:3px;text-align:center;background:#f0f0f0;border-radius:6px;color:#ccc;font-size:10px;">—</td>`;
+          }
+          const nl=wnl.find(x=>x.data===ds&&x.turno===turno);
+          if(nl){
+            const ico=nl.motivo==='ferie'?'🏖️':nl.motivo==='pioggia'?'🌧️':'📋';
+            const nota=nl.nota?`<div style="font-size:8px;color:#555;max-width:44px;word-break:break-word;line-height:1.2;">${nl.nota}</div>`:'';
+            return `<td style="padding:3px;text-align:center;background:#e3f2fd;border-radius:6px;"><div style="font-size:14px;">${ico}</div>${nota}</td>`;
+          }
+          const dayInts=wints.filter(x=>x.data===ds&&x.turno===turno);
+          if(!dayInts.length){
+            const isPast=ds<today();
+            return `<td style="padding:3px;text-align:center;background:${isPast?'var(--rdp)':'#fafafa'};border-radius:6px;">${isPast?'<div style="font-size:12px;">❌</div>':''}</td>`;
+          }
+          const done=dayInts[0].terminata;
+          return `<td style="padding:3px;text-align:center;background:${done?'var(--gp)':'var(--orp)'};border-radius:6px;" title="${AREAS.find(x=>x.id===dayInts[0].areaId)?.nome||''}">${areaBadge(dayInts[0].areaId,done)}</td>`;
+        }).join('')}
+      </tr>`;
+    }).join('')}
+  </table></div>`;
+  // legenda
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;font-size:10px;color:var(--tl);">
+    <span>✅ Completato</span><span>🔄 In corso</span><span>❌ Non eseguito</span><span>🏖️ Ferie</span><span>🌧️ Pioggia</span><span>📋 Altro</span><span>— Non previsto</span>
+  </div>`;
+  html+=`</div>`;
+  return html;
 }
 
 function renderReport(){
@@ -826,32 +826,37 @@ function renderReport(){
   const nls=getPNl();
   const nFerie=nls.filter(x=>x.motivo==='ferie').length;
   const nPioggia=nls.filter(x=>x.motivo==='pioggia').length;
+  const nAltro=nls.filter(x=>x.motivo==='altro').length;
 
-  // Dashboard settimanale sempre in cima al report
   let html=buildWeekDashboard();
 
   html+=`<div class="sg">
     <div class="sb"><div class="sv">${ints.length}</div><div class="sl">🌿 Interventi</div></div>
     <div class="sb"><div class="sv">${comp}</div><div class="sl">✅ Completati</div></div>
-    <div class="sb bl"><div class="sv">${totOre.toFixed(1)}</div><div class="sl">⏱️ Ore totali</div></div>
+    <div class="sb bl"><div class="sv">${totOre.toFixed(0)}</div><div class="sl">⏱️ Ore totali</div></div>
     <div class="sb"><div class="sv">${uniq}</div><div class="sl">📍 Aree lavorate</div></div>
   </div>`;
-  if(nFerie||nPioggia){
-    html+=`<div class="card"><div class="ct">📋 Assenze nel periodo</div>
-      <div class="krow"><span class="kl">🏖️ Turni in Ferie</span><span class="kv">${nFerie}</span></div>
-      <div class="krow"><span class="kl">🌧️ Turni per Pioggia</span><span class="kv">${nPioggia}</span></div>
+
+  if(nFerie||nPioggia||nAltro){
+    html+=`<div class="card"><div class="ct">📋 Assenze/Attività nel periodo</div>
+      ${nFerie?`<div class="krow"><span class="kl">🏖️ Turni in Ferie</span><span class="kv">${nFerie}</span></div>`:''}
+      ${nPioggia?`<div class="krow"><span class="kl">🌧️ Turni per Pioggia</span><span class="kv">${nPioggia}</span></div>`:''}
+      ${nAltro?`<div class="krow"><span class="kl">📋 Altre attività</span><span class="kv">${nAltro}</span></div>`:''}
     </div>`;
   }
+
   const byA={};
   ints.forEach(i=>{if(!byA[i.areaId])byA[i.areaId]={c:0,ore:0,comp:0};byA[i.areaId].c++;byA[i.areaId].ore+=i.ore||0;if(i.terminata)byA[i.areaId].comp++;});
   if(Object.keys(byA).length){
     html+=`<div class="card"><div class="ct">📊 KPI per area (ore · min/100m²)</div>`;
     Object.entries(byA).sort((a,b)=>b[1].ore-a[1].ore).forEach(([id,d])=>{
       const a=AREAS.find(x=>x.id===parseInt(id));if(!a)return;
+      const ai=AICON[parseInt(id)];
       const kpi=a.mq&&d.ore>0?(d.ore/a.mq*60).toFixed(1):null;
-      html+=`<div class="krow"><span class="kl">${TICON[a.tipo]||''} ${a.nome}</span><span class="kv">${d.ore.toFixed(1)}h${kpi?` · ${kpi}'/100m²`:''}</span></div>`;
+      html+=`<div class="krow"><span class="kl">${ai?ai.ico:TICON[a.tipo]||''}${ai?.key?`<sup style="font-size:9px">${ai.key}</sup>`:''} ${a.nome}</span><span class="kv">${d.ore.toFixed(1)}h${kpi?` · ${kpi}'/100m²`:''}</span></div>`;
     });html+=`</div>`;
   }
+
   const byD={};
   ints.forEach(i=>{if(!byD[i.data])byD[i.data]={am:0,pm:0};byD[i.data][i.turno]=(byD[i.data][i.turno]||0)+1;});
   if(Object.keys(byD).length){
@@ -860,43 +865,26 @@ function renderReport(){
       html+=`<div class="krow"><span class="kl">${dstr(d)}</span><span class="kv">${t.am?`☀️${t.am} `:''} ${t.pm?`🌅${t.pm}`:''}</span></div>`;
     });html+=`</div>`;
   }
-  if(!ints.length)html+=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-txt">Nessun intervento nel periodo</div></div>`;
+
+  if(!ints.length&&!nFerie&&!nPioggia&&!nAltro)html+=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-txt">Nessun intervento nel periodo</div></div>`;
   document.getElementById('reportContent').innerHTML=html;
 }
 
-function renderAlerts(){
-  const s=gset();if(document.getElementById('alertThreshold'))document.getElementById('alertThreshold').value=s.alertDays||14;
-  const{urg,wrn}=getAlerts();
-  let html='';
-  if(!urg.length&&!wrn.length){html=`<div class="empty"><div class="empty-ico">✅</div><div class="empty-txt">Nessun alert! Tutte le aree sono aggiornate.</div></div>`;}
-  else{
-    if(urg.length){
-      html+=`<div class="stitle">🚨 Urgenti (oltre ${Math.round((s.alertDays||14)*1.5)} giorni)</div>`;
-      urg.forEach(x=>{html+=`<div class="ali urg"><span class="ali-ico">🚨</span><div class="ali-txt"><div class="ali-nm">${TICON[x.area.tipo]||''} ${x.area.nome}</div><div class="ali-dy">${x.days===999?'Mai lavorata':x.days+' giorni senza intervento'} · ${x.area.via}</div></div></div>`;});
-    }
-    if(wrn.length){
-      html+=`<div class="stitle">⚠️ Attenzione (oltre ${s.alertDays||14} giorni)</div>`;
-      wrn.forEach(x=>{html+=`<div class="ali wrn"><span class="ali-ico">⚠️</span><div class="ali-txt"><div class="ali-nm">${TICON[x.area.tipo]||''} ${x.area.nome}</div><div class="ali-dy">${x.days} giorni senza intervento · ${x.area.via}</div></div></div>`;});
-    }
-  }
-  document.getElementById('alertList').innerHTML=html;
-}
-
 function renderLastInts(){
-  // unisci interventi e non-lavoro in un unico storico ordinato per data
   const ints=gints().map(i=>({...i,_type:'int'}));
   const nls=gnl().map(x=>({...x,_type:'nl'}));
   const all=[...ints,...nls].sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id)).slice(0,10);
   if(!all.length)return`<div style="font-size:13px;color:var(--tl);text-align:center;padding:8px">Nessun intervento o assenza registrata</div>`;
   return all.map(r=>{
     if(r._type==='nl'){
-      const icon=r.motivo==='ferie'?'🏖️':'🌧️';
-      const txt=r.motivo==='ferie'?'Ferie':'Pioggia';
+      const icon=r.motivo==='ferie'?'🏖️':r.motivo==='pioggia'?'🌧️':'📋';
+      const txt=r.motivo==='ferie'?'Ferie':r.motivo==='pioggia'?'Pioggia':(r.nota||'Attività interna');
       const tl=r.turno==='pm'?'🌅':'☀️';
-      return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm" style="color:var(--bl)">${tl} ${icon} ${txt} — turno non lavorato</div><div class="hi-st">${icon}</div></div>`;
+      return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm" style="color:var(--bl)">${tl} ${icon} ${txt}</div><div class="hi-st">${icon}</div></div>`;
     }
     const a=AREAS.find(x=>x.id===r.areaId);
-    return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm">${a?.nome||'Area '+r.areaId} · ${r.turno==='pm'?'🌅':'☀️'}${r.ore?' · '+r.ore+'h':''}</div><div class="hi-st">${r.terminata?'✅':'🔄'}</div></div>`;
+    const ai=AICON[r.areaId];
+    return`<div class="hi"><div class="hi-dt">${dstr(r.data)}</div><div class="hi-nm">${ai?ai.ico:''} ${a?.nome||'Area '+r.areaId} · ${r.turno==='pm'?'🌅':'☀️'}${r.ore?' · '+r.ore+'h':''}</div><div class="hi-st">${r.terminata?'✅':'🔄'}</div></div>`;
   }).join('');
 }
 
@@ -908,18 +896,43 @@ function exportCSV(){
     rows.push([dstr(i.data),GIORNI[dt.getDay()],i.turno==='pm'?'Pomeriggio':'Mattina',i.areaId,a.nome||'',a.via||'',TLBL[a.tipo]||'',a.mq||'',i.terminata?'Sì':'No',i.ore||0,i.note||'']);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`verde_grumo_nevano_${today()}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
 
+// ── SEED DATI STORICI ─────────────────────────────────────────────────────────
+// Popola interventi e assenze della settimana corrente (Lun 4/5 – Mer 6/5/2026)
+// Viene eseguito UNA sola volta: controlla se i record sono già presenti.
+function seedStorico(){
+  const ints=gints();
+  const nl=gnl();
+  const SEED_KEY='gvn_seeded_v1';
+  if(localStorage.getItem(SEED_KEY))return; // già eseguito
+
+  // Lunedì 4/5: ferie (turno mattina — l'unico disponibile il lunedì)
+  nl.push({id:'s1', data:'2026-05-04', turno:'am', motivo:'ferie'});
+
+  // Martedì 5/5 mattina: ritiro concimi (attività interna)
+  nl.push({id:'s2', data:'2026-05-05', turno:'am', motivo:'altro', nota:'Ritiro concimi'});
+
+  // Martedì 5/5 pomeriggio: Scuola Quintavalle (id:4) — completata
+  ints.push({id:'s3', data:'2026-05-05', turno:'pm', areaId:4, terminata:true, ore:3, note:''});
+
+  // Mercoledì 6/5 mattina: Villa Comunale Corso Mazzini (id:8) — completata
+  ints.push({id:'s4', data:'2026-05-06', turno:'am', areaId:8, terminata:true, ore:5, note:''});
+
+  sdb('ints', ints);
+  sdb('nonlavoro', nl);
+  localStorage.setItem(SEED_KEY,'1');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.mo').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 window.addEventListener('DOMContentLoaded',()=>{
+  seedStorico();
   renderHome();
-  const s=gset();
-  if(document.getElementById('alertThreshold'))document.getElementById('alertThreshold').value=s.alertDays||14;
-  // Registra service worker per uso offline e installazione PWA
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }
