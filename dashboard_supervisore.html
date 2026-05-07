@@ -185,8 +185,8 @@ var gData=null;
 var rpPeriod="sett";
 
 // ── UTILITY ───────────────────────────────────────────────────────────────────
-function today(){ return new Date().toISOString().slice(0,10); }
-function isoD(d){ return d.toISOString().slice(0,10); }
+function today(){var d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function isoD(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
 function dstr(s){
   var d=new Date(s+"T00:00:00");
   return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear();
@@ -305,7 +305,7 @@ function renderAlerts(){
     var tInts=(gData.ints||[]).filter(function(i){ return i.data===t; });
     var tNL=(gData.nonlavoro||[]).filter(function(n){ return n.data===t; });
     var shift=gData.shift;
-    if(h>9||(h===9&&m>=30)){
+    if(h>9||(h===9&&m>=50)){
       var hasAm=tInts.some(function(i){return i.turno==="am";})||tNL.some(function(n){return n.turno==="am";})
                ||(shift&&shift.data===t&&shift.turno==="am");
       if(!hasAm) alerts.push({cls:"red",msg:"🔴 TURNO MATTINA non registrato — ore "+h+":"+pad(m)});
@@ -375,8 +375,12 @@ function renderWeek(){
         var ore=dayInts.reduce(function(s,x){return s+(x.ore||0);},0);
         html+='<td class="ok" title="'+(a?a.nome:"Area")+'">'+areaIcon(a||{id:dayInts[0].areaId,tipo:"pubbl",lbl:null},32)+'<br><small style="font-size:10px;">'+ore+'h</small></td>';
       } else {
-        var isPast=(ds<t); var isFut=(new Date(ds)>new Date(t));
-        html+='<td class="'+(isFut?"future":isPast?"miss":"")+'">'+(isPast?'<span class="wtag r">❌</span>':"")+'</td>';
+        var isPast=(ds<t); var isFut=(ds>t); var isToday=(ds===t);
+        if(isToday){
+          html+='<td style="background:#fffde7;border:2px solid #fbc02d;border-radius:8px;text-align:center;"><small style="font-size:10px;color:#f57f17;">⏳</small></td>';
+        } else {
+          html+='<td class="'+(isFut?"future":isPast?"miss":"")+'">'+(isPast?'<span class="wtag r">❌</span>':"")+'</td>';
+        }
       }
     }
     html+="</tr>";
