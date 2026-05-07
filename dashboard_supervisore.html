@@ -438,7 +438,7 @@ function renderKpiArea(){
       <span style="font-size:10px;color:var(--tl);">${d.comp}/${d.c} int.</span>
     </div>
     <div style="font-size:13px;font-weight:700;color:var(--gm);padding:6px 0;border-bottom:1px solid #fafafa;">${d.ore.toFixed(1)}h</div>
-    <div style="font-size:13px;color:var(--tl);padding:6px 0;border-bottom:1px solid #fafafa;">${kpi?kpi+''':'—'}</div>`;
+    <div style="font-size:13px;color:var(--tl);padding:6px 0;border-bottom:1px solid #fafafa;">${kpi?(kpi+"min"):"—"}</div>`;
   });
   html+='</div>';
   document.getElementById('kpi-area-view').innerHTML=html;
