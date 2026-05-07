@@ -443,6 +443,15 @@ function turnoBlock(turno){
   const isPm=turno==='pm';
   const avail=isPm?isAftn(t):isMorn(t);
   if(!avail) return `<p style="font-size:12px;color:var(--tl);margin-bottom:8px">⚪ Turno ${isPm?'pomeriggio':'mattina'} non disponibile oggi</p>`;
+  // Turno già registrato oggi → non modificabile
+  const doneInt=gints().find(x=>x.data===t&&x.turno===turno);
+  if(doneInt){
+    const aD=AREAS.find(x=>x.id===doneInt.areaId);
+    return `<div class="sbanner ${isPm?'pm':''}" style="margin-bottom:8px;opacity:.9;">
+      <h3>${isPm?'🌅':'☀️'} Turno ${isPm?'Pomeriggio':'Mattina'} — ✅ Registrato</h3>
+      <p>📍 ${aD?.nome||'Area '+doneInt.areaId} · ⏱️ ${doneInt.ore}h · <em>Non modificabile</em></p>
+    </div>`;
+  }
   const nl=gnl().find(x=>x.data===t&&x.turno===turno);
   if(nl){
     const icon=nl.motivo==='ferie'?'🏖️':nl.motivo==='pioggia'?'🌧️':'📋';
@@ -834,25 +843,33 @@ function exportCSV(){
 // Popola interventi e assenze della settimana corrente (Lun 4/5 – Mer 6/5/2026)
 // Viene eseguito UNA sola volta: controlla se i record sono già presenti.
 function seedStorico(){
-  const ints=gints();
-  const nl=gnl();
-  const SEED_KEY='gvn_seeded_v3';
+  const SEED_KEY='gvn_seeded_v4';
   if(localStorage.getItem(SEED_KEY))return; // già eseguito
 
-  // Date relative alla settimana corrente
+  // Date relative alla settimana corrente (Lun–Mer)
   const _now=new Date();
   const _dw=_now.getDay();
   const _mon=new Date(_now);_mon.setDate(_now.getDate()-(_dw===0?6:_dw-1));
   const _tue=new Date(_mon);_tue.setDate(_mon.getDate()+1);
   const _wed=new Date(_mon);_wed.setDate(_mon.getDate()+2);
-  const monS=_mon.toISOString().slice(0,10);
-  const tueS=_tue.toISOString().slice(0,10);
-  const wedS=_wed.toISOString().slice(0,10);
+  const monS=_mon.getFullYear()+'-'+String(_mon.getMonth()+1).padStart(2,'0')+'-'+String(_mon.getDate()).padStart(2,'0');
+  const tueS=_tue.getFullYear()+'-'+String(_tue.getMonth()+1).padStart(2,'0')+'-'+String(_tue.getDate()).padStart(2,'0');
+  const wedS=_wed.getFullYear()+'-'+String(_wed.getMonth()+1).padStart(2,'0')+'-'+String(_wed.getDate()).padStart(2,'0');
 
-  nl.push({id:'s1',data:monS,turno:'am',motivo:'ferie'});
-  nl.push({id:'s2',data:tueS,turno:'am',motivo:'altro',nota:'Ritiro concimi'});
-  ints.push({id:'s3',data:tueS,turno:'pm',areaId:4,terminata:true,ore:3,note:''});
-  ints.push({id:'s4',data:wedS,turno:'am',areaId:8,terminata:true,ore:5,note:''});
+  // Rimuovi eventuali voci errate (s4 con areaId:8 per mercoledì)
+  let ints=gints().filter(x=>!(x.id==='s4'&&x.areaId===8));
+  let nl=gnl();
+
+  // Dedup nonlavoro per data+turno
+  const seenNl=new Set();
+  nl=nl.filter(n=>{const k=n.data+'|'+n.turno;if(seenNl.has(k))return false;seenNl.add(k);return true;});
+
+  // Aggiungi voci storiche se non presenti
+  if(!nl.find(x=>x.id==='s1'))nl.push({id:'s1',data:monS,turno:'am',motivo:'ferie'});
+  if(!nl.find(x=>x.id==='s2'))nl.push({id:'s2',data:tueS,turno:'am',motivo:'altro',nota:'Ritiro concimi'});
+  if(!ints.find(x=>x.id==='s3'))ints.push({id:'s3',data:tueS,turno:'pm',areaId:4,terminata:true,ore:3,note:''});
+  // Mercoledì: Villa Comunale Campo sportivo (areaId 13) — NON Corso Mazzini (8)
+  if(!ints.find(x=>x.id==='s4'))ints.push({id:'s4',data:wedS,turno:'am',areaId:13,terminata:true,ore:5,note:''});
 
   sdb('ints', ints);
   sdb('nonlavoro', nl);
