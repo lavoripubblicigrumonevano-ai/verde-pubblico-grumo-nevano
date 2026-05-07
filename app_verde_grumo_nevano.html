@@ -233,15 +233,7 @@ select.fi{-webkit-appearance:none;}
   </div>
 </div>
 
-<div class="mo" id="moFine">
-  <div class="mb">
-    <button class="mo-close" onclick="closeModal('moFine')">✕</button>
-    <div class="mt">✅ Fine Turno — Esiti Interventi</div>
-    <div id="fineContent"></div>
-    <button class="btn btn-p" onclick="confermaTurno()">💾 Conferma e Salva</button>
-    <button class="btn btn-s" onclick="closeModal('moFine')">Annulla</button>
-  </div>
-</div>
+
 
 <div class="mo" id="moArea">
   <div class="mb">
@@ -415,15 +407,7 @@ function renderHome(){
     <div class="sb"><div class="sv">${AREAS.length}</div><div class="sl">📍 Aree totali</div></div>
   </div>`;
 
-  const shift=gshift();
-  if(shift){
-    document.getElementById('homeShift').innerHTML=`
-    <div class="sbanner ${shift.turno==='pm'?'pm':''}">
-      <h3>${shift.turno==='pm'?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} IN CORSO 🟢</h3>
-      <p>Avviato: ${shift.inizioOra} · ${shift.aree.length} aree selezionate</p>
-    </div>
-    <button class="btn btn-d" onclick="navigate('turno')">🏁 Fine Turno — Inserisci Esiti</button>`;
-  } else {
+  {
     const nlOggi=gnl().filter(x=>x.data===t);
     let btns='';
     nlOggi.forEach(x=>{
@@ -451,9 +435,7 @@ function renderHome(){
 }
 
 function renderTurno(){
-  const shift=gshift();
-  if(shift)renderTurnoActive(shift);
-  else renderTurnoIdle();
+  renderTurnoIdle();
 }
 
 function turnoBlock(turno){
@@ -593,120 +575,37 @@ function sitoItem(a,turno,sched){
 
 function confirmStart(turno){
   if(!curAree.length){alert('⚠️ Seleziona un sito!');return;}
-  const now=new Date();
+  const t=today();
   const durata=DURATA_TURNO[turno]||5;
-  sdb('shift',{id:uid(),data:today(),turno,durata,aree:[curAree[0]],
-    inizioOra:`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`});
-  renderTurnoActive(gshift());
-}
-
-function renderTurnoActive(shift){
-  const isPm=shift.turno==='pm';
-  const durata=DURATA_TURNO[shift.turno]||5;
-  const a=AREAS.find(x=>x.id===shift.aree[0]);
-  if(!a)return;
-  document.getElementById('turnoContent').innerHTML=`
-  <div class="sbanner ${isPm?'pm':''}">
-    <h3>${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} IN CORSO 🟢</h3>
-    <p>Avviato: ${shift.inizioOra} · ⏱️ ${durata}h totali</p>
-  </div>
-  <div class="card">
-    <div class="ct">📍 Sito in lavorazione</div>
-    <div class="ai sel">
-      ${getAreaIconHtml(a.id,42)}
-      <div class="ain">
-        <div class="an" style="font-size:15px;">${a.nome}</div>
-        <div class="ad">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</div>
-        <div class="ad" style="margin-top:3px;">⏱️ Tutto il turno dedicato a questo sito (${durata}h)</div>
-      </div>
-    </div>
-  </div>
-  <button class="btn btn-d" onclick="openFine()">🏁 Fine Turno — Inserisci Esito</button>
-  <button class="btn btn-s" onclick="cancelShift()">❌ Annulla turno</button>`;
-}
-
-function cancelShift(){
-  if(confirm('Annullare il turno? I dati non verranno salvati.')){sdb('shift',null);renderTurnoIdle();}
-}
-
-function openFine(){
-  const shift=gshift();if(!shift)return;
-  const isPm=shift.turno==='pm';
-  const durata=DURATA_TURNO[shift.turno]||5;
-  const a=AREAS.find(x=>x.id===shift.aree[0]);
-  if(!a)return;
-  fineData={};
-  fineData[a.id]={term:null,ore:durata};
-  document.getElementById('fineContent').innerHTML=`
-  <div style="background:var(--gp);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--tm);margin-bottom:14px;text-align:center;">
-    ${isPm?'🌅 Turno Pomeriggio':'☀️ Turno Mattina'} · <strong>${durata} ore</strong> dedicate a questo sito
-  </div>
-  <div class="ci" id="ci-${a.id}">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-      ${getAreaIconHtml(a.id,44)}
-      <div>
-        <div style="font-size:15px;font-weight:700;">${a.nome}</div>
-        <div style="font-size:12px;color:var(--tl);">${a.via}${a.mq?' · '+a.mq.toLocaleString('it')+' m²':''}</div>
-      </div>
-    </div>
-    <p style="font-size:13px;color:var(--tm);margin-bottom:10px;font-weight:600;">Il sito è stato completato?</p>
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <button class="ci-btn" id="ciy-${a.id}" onclick="setCi(${a.id},true)"
-        style="flex:1;padding:14px;font-size:15px;">✅ Sì, completato</button>
-      <button class="ci-btn" id="cin-${a.id}" onclick="setCi(${a.id},false)"
-        style="flex:1;padding:14px;font-size:15px;">🔄 No, continua</button>
-    </div>
-    <input class="fi" type="text" placeholder="📝 Note (opzionale)" id="note-${a.id}"
-      style="font-size:13px;padding:9px 11px;">
-  </div>`;
-
-  openModal('moFine');
-}
-
-function setCi(id,done){
-  fineData[id].term=done;
-  document.getElementById('ciy-'+id).className='ci-btn'+(done?' yes':'');
-  document.getElementById('cin-'+id).className='ci-btn'+(!done?' no':'');
-}
-
-function confermaTurno(){
-  const shift=gshift();if(!shift)return;
-  const id=shift.aree[0];
-  if(fineData[id]?.term===null||fineData[id]?.term===undefined){
-    alert('⚠️ Indica se il sito è stato completato oppure no!');return;
-  }
-  const d=fineData[id];
-  const durata=DURATA_TURNO[shift.turno]||5;
-  const note=document.getElementById('note-'+id)?.value||'';
-  const ints=gints();const sched=gsched();const t=today();
+  const id=curAree[0];
+  const ints=gints();
+  const sched=gsched();
   const a=AREAS.find(x=>x.id===id);
 
-  ints.push({id:uid(),data:t,turno:shift.turno,areaId:id,terminata:d.term,ore:durata,note});
+  ints.push({id:uid(),data:t,turno,areaId:id,terminata:true,ore:durata,note:''});
 
-  if(!d.term){
-    const isSc=a?.tipo==='scuola';
-    const nxtD=nextWD(t,isSc);
-    const nxtT=isSc?'pm':'am';
-    const ex=sched.findIndex(s=>s.areaId===id);
-    if(ex>=0)sched.splice(ex,1);
-    sched.push({areaId:id,data:nxtD,turno:nxtT,motivo:'non_terminata'});
-  } else {
-    const ex=sched.findIndex(s=>s.areaId===id&&s.data===t);
-    if(ex>=0)sched.splice(ex,1);
-  }
+  const ex=sched.findIndex(s=>s.areaId===id&&s.data===t);
+  if(ex>=0)sched.splice(ex,1);
 
-  sdb('ints',ints);sdb('sched',sched);sdb('shift',null);
-  closeModal('moFine');
+  sdb('ints',ints);
+  sdb('sched',sched);
+  sdb('shift',null);
 
-  if(d.term){
-    const kpi=a?.mq?(durata/a.mq*60).toFixed(1):null;
-    alert(`✅ Turno salvato!\n\n📍 ${a?.nome}\n⏱️ ${durata}h lavorate${kpi?'\n📊 KPI: '+kpi+' min/100m²':''}`);
-  } else {
-    const nxtD=sched.find(s=>s.areaId===id)?.data;
-    alert(`🔄 Sito non completato — verrà riprogrammato\n\n📍 ${a?.nome}\n📅 Prossimo turno: ${nxtD?dstr(nxtD):'da definire'}`);
-  }
-  renderTurnoIdle();navigate('home');
+  closeModal('moConferma');
+  syncGH();
+
+  const kpi=a?.mq?(durata/a.mq*60).toFixed(1):null;
+  alert('✅ Turno '+( turno==='pm'?'Pomeriggio':'Mattina')+' registrato!
+
+📍 '+(a?.nome||'')+' ⏱️ '+durata+'h'+( kpi?'
+📊 KPI: '+kpi+' min/100m²':''));
+  navigate('report');
 }
+
+
+
+
+
 
 // ── AREE ─────────────────────────────────────────────────────────────────────
 function renderAree(){
