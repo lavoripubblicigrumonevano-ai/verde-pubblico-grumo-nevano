@@ -94,7 +94,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="hdr">
   <img id="hdr-logo" alt="Comune di Grumo Nevano">
   <div class="hdr-tx">
-    <h1>Pannello Supervisore</h1>
+    <h1>Dashboard manutenzione del verde</h1>
     <p>Verde Pubblico — Ufficio Ambiente · Settore V</p>
   </div>
   <div class="hdr-right">
@@ -372,9 +372,8 @@ function renderWeek(){
         html+='<td class="wip"><span class="wtag y">🔄 In corso</span></td>';
       } else if(dayInts.length>0){
         var a=null; for(var k=0;k<AREAS.length;k++){if(AREAS[k].id===dayInts[0].areaId){a=AREAS[k];break;}}
-        var nome=a?a.nome.split(" ").pop():"Area";
         var ore=dayInts.reduce(function(s,x){return s+(x.ore||0);},0);
-        html+='<td class="ok"><span class="wtag g">'+nome+'</span><br><small style="font-size:10px;">'+ore+'h</small></td>';
+        html+='<td class="ok" title="'+(a?a.nome:"Area")+'">'+areaIcon(a||{id:dayInts[0].areaId,tipo:"pubbl",lbl:null},32)+'<br><small style="font-size:10px;">'+ore+'h</small></td>';
       } else {
         var isPast=(ds<t); var isFut=(new Date(ds)>new Date(t));
         html+='<td class="'+(isFut?"future":isPast?"miss":"")+'">'+(isPast?'<span class="wtag r">❌</span>':"")+'</td>';
@@ -391,7 +390,14 @@ function renderWeek(){
 
 // ── ASSENZE ────────────────────────────────────────────────────────────────────
 function renderAssenze(){
-  var nls=getPNl();
+  var rawNls=getPNl();
+  var seen={};
+  var nls=rawNls.filter(function(n){
+    var k=n.data+"|"+n.turno;
+    if(seen[k]) return false;
+    seen[k]=true;
+    return true;
+  });
   if(!nls.length){ document.getElementById("assenze-view").innerHTML='<div class="no-data">Nessuna assenza nel periodo</div>'; return; }
   var grouped={ferie:0,pioggia:0,malattia:0,altro:0};
   nls.forEach(function(n){ grouped[n.motivo]=(grouped[n.motivo]||0)+1; });
