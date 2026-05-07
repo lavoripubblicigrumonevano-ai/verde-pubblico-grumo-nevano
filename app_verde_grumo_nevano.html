@@ -30,6 +30,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px 8px;background:none;border:none;cursor:pointer;color:var(--tl);font-size:10px;gap:2px;transition:color .15s;}
 .nb .ni{font-size:22px;line-height:1;}
 .nb.act{color:var(--gm);}
+.nb.act .ni{background:var(--gp);border-radius:12px;padding:3px 10px;display:block;}
 .content{flex:1;overflow-y:auto;padding:13px 13px 4px;-webkit-overflow-scrolling:touch;}
 .vw{display:none;animation:fi .18s ease;}
 .vw.act{display:block;}
@@ -198,7 +199,7 @@ select.fi{-webkit-appearance:none;}
     <span class="ni">🏠</span><span>Home</span>
   </button>
   <button class="nb" id="nb-turno" onclick="navigate('turno')">
-    <span class="ni">🌿</span><span>Turno</span>
+    <span class="ni">⏰</span><span>Turno</span>
   </button>
   <button class="nb" id="nb-aree" onclick="navigate('aree')">
     <span class="ni">📍</span><span>Aree</span>
@@ -340,7 +341,11 @@ async function syncGH(){
 function sdb(k,v){localStorage.setItem('gvn_'+k,JSON.stringify(v));if(k!=='shift'||v===null){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncGH,3000);}}
 function gset(){return gdb('settings',{alertDays:14});}
 function saveSettings(){const s=gset();s.alertDays=parseInt(document.getElementById('alertThreshold')?.value||14);sdb('settings',s);}
-function gints(){return gdb('ints',[]);}
+function gints(){
+  const raw=gdb('ints',[]);
+  const seen=new Set();
+  return raw.filter(i=>{const k=i.data+'|'+i.areaId+'|'+i.turno;if(seen.has(k))return false;seen.add(k);return true;});
+}
 function gsched(){return gdb('sched',[]);}
 function gshift(){return gdb('shift',null);}
 function gnl(){return gdb('nonlavoro',[]);}
@@ -467,14 +472,24 @@ function turnoBlock(turno){
     </div>
     <button class="btn btn-gr" style="margin-bottom:8px" onclick="annullaNonLavoro('${turno}')">↩️ Annulla segnalazione</button>`;
   }
+  // Controllo orario
+  const now=new Date();const hh=now.getHours(),mm=now.getMinutes();
+  const timeOk=isPm?(hh>15||(hh===15&&mm>=0)):(hh>7||(hh===7&&mm>=30));
+  const startTime=isPm?'15:00':'07:30';
   const lbl=isPm?'🌅 Avvia Turno Pomeriggio':'☀️ Avvia Turno Mattina';
   const sub=isPm?'Martedì / Giovedì · 3 ore · Accesso scuole':'Lunedì–Venerdì · 5 ore';
   const cls=isPm?'btn-o':'btn-p';
-  return `<button class="btn ${cls}" onclick="setupShift('${turno}')">${lbl}<br><small style="font-weight:400;opacity:.85">${sub}</small></button>
-  <div style="display:flex;gap:7px;margin-bottom:8px;">
+  const nlBtns=`<div style="display:flex;gap:7px;margin-bottom:8px;">
     <button class="btn btn-b" style="flex:1;padding:9px;font-size:13px;" onclick="registraNonLavoro('${turno}','ferie')">🏖️ Ferie</button>
     <button class="btn btn-gr" style="flex:1;padding:9px;font-size:13px;" onclick="registraNonLavoro('${turno}','pioggia')">🌧️ Pioggia</button>
   </div>`;
+  if(!timeOk){
+    return `<button class="btn" style="background:#e0e0e0;color:#546e7a;cursor:pointer;margin-bottom:8px;"
+      onclick="alert('⏰ Il turno ${isPm?'pomeriggio':'mattina'} può essere avviato dalle ${startTime}\n\nSe sei già operativo prima di quell\'orario, attendi oppure segnala ferie o pioggia.')">
+      ${lbl}<br><small style="font-weight:400;opacity:.8;font-size:11px">Attivo dalle ${startTime} · ${sub}</small>
+    </button>${nlBtns}`;
+  }
+  return `<button class="btn ${cls}" onclick="setupShift('${turno}')">${lbl}<br><small style="font-weight:400;opacity:.85">${sub}</small></button>${nlBtns}`;
 }
 
 function annullaNonLavoro(turno){
@@ -924,7 +939,7 @@ function exportCSV(){
 function seedStorico(){
   const ints=gints();
   const nl=gnl();
-  const SEED_KEY='gvn_seeded_v2';
+  const SEED_KEY='gvn_seeded_v3';
   if(localStorage.getItem(SEED_KEY))return; // già eseguito
 
   // Date relative alla settimana corrente
