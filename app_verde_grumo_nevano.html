@@ -595,10 +595,8 @@ function confirmStart(turno){
   syncGH();
 
   const kpi=a?.mq?(durata/a.mq*60).toFixed(1):null;
-  alert('✅ Turno '+( turno==='pm'?'Pomeriggio':'Mattina')+' registrato!
-
-📍 '+(a?.nome||'')+' ⏱️ '+durata+'h'+( kpi?'
-📊 KPI: '+kpi+' min/100m²':''));
+  const msg='✅ Turno '+(turno==='pm'?'Pomeriggio':'Mattina')+' registrato!\n\n📍 '+(a?.nome||'')+'\n⏱️ '+durata+'h'+(kpi?'\n📊 KPI: '+kpi+' min/100m²':'');
+  alert(msg);
   navigate('report');
 }
 
