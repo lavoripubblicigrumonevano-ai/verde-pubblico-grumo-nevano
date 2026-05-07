@@ -1,4 +1,4 @@
-const CACHE = 'verde-gn-v4';
+const CACHE = 'verde-gn-v5';
 const FILES = [
   './app_verde_grumo_nevano.html',
   './manifest.json',
