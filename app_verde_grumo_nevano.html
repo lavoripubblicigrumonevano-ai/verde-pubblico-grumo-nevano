@@ -702,7 +702,7 @@ function getPNl(){
 function getMonLun(){
   const t=new Date(today());const dw=t.getDay();
   const mo=new Date(t);mo.setDate(t.getDate()-(dw===0?6:dw-1));
-  return mo.toISOString().slice(0,10);
+  return mo.getFullYear()+'-'+String(mo.getMonth()+1).padStart(2,'0')+'-'+String(mo.getDate()).padStart(2,'0');
 }
 
 function buildWeekDashboard(){
@@ -717,7 +717,7 @@ function buildWeekDashboard(){
       <th style="padding:4px 3px;background:var(--gp);border-radius:6px;min-width:42px;font-size:10px;color:var(--tm);"></th>
       ${DAYS_IT.map((d,i)=>{
         const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
-        const isToday=dt.toISOString().slice(0,10)===today();
+        const isToday=(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))===today();
         return `<th style="padding:4px 3px;text-align:center;min-width:46px;background:${isToday?'var(--gl)':'var(--gp)'};color:${isToday?'#fff':'var(--tm)'};border-radius:6px;font-size:10px;">${d}<br><span style="font-weight:400;">${dt.getDate()}/${dt.getMonth()+1}</span></th>`;
       }).join('')}
     </tr>
@@ -727,7 +727,7 @@ function buildWeekDashboard(){
         <td style="padding:4px 3px;font-weight:600;color:var(--tm);white-space:nowrap;font-size:10px;text-align:center;">${lbl}</td>
         ${[0,1,2,3,4].map(i=>{
           const dt=new Date(monStr);dt.setDate(dt.getDate()+i);
-          const ds=dt.toISOString().slice(0,10);
+          const ds=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
           const dw=dt.getDay();
           if(turno==='pm'&&dw!==2&&dw!==4){
             return `<td style="padding:3px;text-align:center;background:#9e9e9e;border-radius:6px;color:#616161;font-size:10px;">—</td>`;
@@ -757,6 +757,182 @@ function buildWeekDashboard(){
   return html;
 }
 
+function localDs(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+
+function buildPeriodDashboard(){
+  if(rpPeriod==='sett')return buildWeekDashboard();
+  if(rpPeriod==='mese')return buildMonthDashboard();
+  if(rpPeriod==='trim')return buildTrimDashboard();
+  return buildAnnoDashboard();
+}
+
+function buildDayCell(ds,turno,ints,nls,isFuture){
+  if(isFuture)return '<td style="padding:3px;text-align:center;background:#fafafa;border-radius:6px;font-size:11px;">—</td>';
+  const nl=nls.find(x=>x.data===ds&&x.turno===turno);
+  if(nl){
+    const ico=nl.motivo==='ferie'?'🏖️':nl.motivo==='pioggia'?'🌧️':'📋';
+    return '<td style="padding:3px;text-align:center;background:#e3f2fd;border-radius:6px;font-size:14px;">'+ico+'</td>';
+  }
+  const hit=ints.find(x=>x.data===ds&&x.turno===turno);
+  if(hit){
+    const done=hit.terminata;
+    return '<td style="padding:3px;text-align:center;background:'+(done?'var(--gp)':'var(--orp)')+';border-radius:6px;" title="'+(AREAS.find(x=>x.id===hit.areaId)||{}).nome+'">'+areaBadge(hit.areaId,done)+'</td>';
+  }
+  return '<td style="padding:3px;text-align:center;background:var(--rdp);border-radius:6px;font-size:12px;">❌</td>';
+}
+
+function buildMonthDashboard(){
+  const t=new Date(today());
+  const yr=t.getFullYear(), mo=t.getMonth();
+  const firstDay=new Date(yr,mo,1);
+  const lastDay=new Date(yr,mo+1,0);
+  const todayStr=today();
+  const mesi=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+  // collect all days in month
+  const ints=gints();
+  const nls=gnl();
+
+  let html='<div class="card"><div class="ct">📅 Dashboard '+mesi[mo]+' '+yr+'</div>';
+  html+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px;">';
+  html+='<tr><th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Giorno</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);min-width:44px;">☀️ Matt.</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);min-width:44px;">🌅 Pom.</th></tr>';
+
+  const DAYS_IT2=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  for(let d=new Date(firstDay);d<=lastDay;d.setDate(d.getDate()+1)){
+    const ds=localDs(d);
+    const dw=d.getDay();
+    if(dw===0||dw===6)continue; // skip weekend
+    const isFuture=ds>todayStr;
+    const dayLabel=DAYS_IT2[dw]+' '+d.getDate();
+    html+='<tr><td style="padding:4px 3px;font-size:10px;color:var(--tm);white-space:nowrap;background:'+(ds===todayStr?'var(--gl)':'var(--gp)')+';border-radius:6px;color:'+(ds===todayStr?'#fff':'var(--tm)')+';">'+dayLabel+'</td>';
+    html+=buildDayCell(ds,'am',ints,nls,isFuture);
+    // pm only Tue/Thu
+    if(dw===2||dw===4){
+      html+=buildDayCell(ds,'pm',ints,nls,isFuture);
+    } else {
+      html+='<td style="padding:3px;text-align:center;background:#e0e0e0;border-radius:6px;color:#9e9e9e;font-size:10px;">—</td>';
+    }
+    html+='</tr>';
+  }
+  html+='</table></div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;font-size:10px;color:var(--tl);"><span>✅ Completato</span><span>❌ Non eseguito</span><span>🏖️ Ferie</span><span>🌧️ Pioggia</span><span>📋 Altro</span><span>— Non previsto</span></div>';
+  html+='</div>';
+  return html;
+}
+
+function buildTrimDashboard(){
+  const t=new Date(today());
+  const yr=t.getFullYear(), mo=t.getMonth();
+  const trimStart=Math.floor(mo/3)*3;
+  const mesi=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const mesiLong=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const todayStr=today();
+  const ints=gints();
+  const nls=gnl();
+
+  let html='<div class="card"><div class="ct">📅 Trimestre '+(Math.floor(mo/3)+1)+'° — '+yr+'</div>';
+  html+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px;">';
+  html+='<tr><th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Settimana</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">☀️ Matt.</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">🌅 Pom.</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Ore</th></tr>';
+
+  for(let m=trimStart;m<trimStart+3;m++){
+    if(m>11)break;
+    const firstDay=new Date(yr,m,1);
+    const lastDay=new Date(yr,m+1,0);
+    // iterate weeks
+    let weekStart=new Date(firstDay);
+    // go back to Monday
+    const wd=weekStart.getDay();
+    weekStart.setDate(weekStart.getDate()-(wd===0?6:wd-1));
+    while(weekStart<=lastDay){
+      const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+4);
+      const wLabel=mesi[weekStart.getMonth()]+' '+weekStart.getDate();
+      let amDone=0,amMiss=0,pmDone=0,pmMiss=0,ore=0;
+      for(let i=0;i<5;i++){
+        const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
+        if(d.getMonth()!==m){weekStart.setDate(weekStart.getDate()+7);continue;}
+        const ds=localDs(d);
+        if(ds>todayStr){weekStart.setDate(weekStart.getDate()+7);continue;}
+        const dw=d.getDay();
+        const nlAm=nls.find(x=>x.data===ds&&x.turno==='am');
+        if(!nlAm){const h=ints.find(x=>x.data===ds&&x.turno==='am');if(h){amDone++;ore+=(h.ore||5);}else{amMiss++;}}
+        if(dw===2||dw===4){
+          const nlPm=nls.find(x=>x.data===ds&&x.turno==='pm');
+          if(!nlPm){const h=ints.find(x=>x.data===ds&&x.turno==='pm');if(h){pmDone++;ore+=(h.ore||3);}else{pmMiss++;}}
+        }
+      }
+      const isCurWeek=weekStart<=new Date(todayStr)&&new Date(todayStr)<=weekEnd;
+      const bg=isCurWeek?'var(--gl)':'var(--gp)';
+      const col=isCurWeek?'#fff':'var(--tm)';
+      html+='<tr>';
+      html+='<td style="padding:3px;font-size:10px;white-space:nowrap;background:'+bg+';border-radius:6px;color:'+col+';">'+wLabel+'</td>';
+      html+='<td style="padding:3px;text-align:center;font-size:10px;">'+amDone+'✅'+(amMiss?'<span style="color:#e53935"> '+amMiss+'❌</span>':'')+'</td>';
+      html+='<td style="padding:3px;text-align:center;font-size:10px;">'+pmDone+'✅'+(pmMiss?'<span style="color:#e53935"> '+pmMiss+'❌</span>':'')+'</td>';
+      html+='<td style="padding:3px;text-align:center;font-size:10px;font-weight:600;color:var(--gl);">'+ore+'h</td>';
+      html+='</tr>';
+      weekStart.setDate(weekStart.getDate()+7);
+    }
+    // month separator
+    html+='<tr><td colspan="4" style="padding:2px 3px;font-size:9px;color:var(--tl);text-align:center;">— '+mesiLong[m]+' —</td></tr>';
+  }
+  html+='</table></div></div>';
+  return html;
+}
+
+function buildAnnoDashboard(){
+  const t=new Date(today());
+  const yr=t.getFullYear();
+  const todayStr=today();
+  const ints=gints();
+  const nls=gnl();
+  const mesiLong=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+  let html='<div class="card"><div class="ct">📅 Anno '+yr+'</div>';
+  html+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px;">';
+  html+='<tr><th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Mese</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">☀️ Matt.</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">🌅 Pom.</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Ore</th>';
+  html+='<th style="padding:4px 3px;background:var(--gp);border-radius:6px;font-size:10px;color:var(--tm);">Ferie/Ass.</th></tr>';
+
+  for(let m=0;m<12;m++){
+    const firstDay=new Date(yr,m,1);
+    const lastDay=new Date(yr,m+1,0);
+    if(localDs(firstDay)>todayStr)break;
+    let amDone=0,amMiss=0,pmDone=0,pmMiss=0,ore=0,assenze=0;
+    for(let d=new Date(firstDay);d<=lastDay;d.setDate(d.getDate()+1)){
+      const ds=localDs(d);
+      if(ds>todayStr)break;
+      const dw=d.getDay();
+      if(dw===0||dw===6)continue;
+      const nlAm=nls.find(x=>x.data===ds&&x.turno==='am');
+      if(nlAm){assenze++;}else{const h=ints.find(x=>x.data===ds&&x.turno==='am');if(h){amDone++;ore+=(h.ore||5);}else{amMiss++;}}
+      if(dw===2||dw===4){
+        const nlPm=nls.find(x=>x.data===ds&&x.turno==='pm');
+        if(nlPm){assenze++;}else{const h=ints.find(x=>x.data===ds&&x.turno==='pm');if(h){pmDone++;ore+=(h.ore||3);}else{pmMiss++;}}
+      }
+    }
+    const isCurMo=(m===t.getMonth());
+    const bg=isCurMo?'var(--gl)':'var(--gp)';
+    const col=isCurMo?'#fff':'var(--tm)';
+    html+='<tr>';
+    html+='<td style="padding:3px;font-size:10px;white-space:nowrap;background:'+bg+';border-radius:6px;color:'+col+';">'+mesiLong[m]+'</td>';
+    html+='<td style="padding:3px;text-align:center;font-size:10px;">'+amDone+'✅'+(amMiss?'<span style="color:#e53935"> '+amMiss+'❌</span>':'')+'</td>';
+    html+='<td style="padding:3px;text-align:center;font-size:10px;">'+pmDone+'✅'+(pmMiss?'<span style="color:#e53935"> '+pmMiss+'❌</span>':'')+'</td>';
+    html+='<td style="padding:3px;text-align:center;font-size:10px;font-weight:600;color:var(--gl);">'+ore+'h</td>';
+    html+='<td style="padding:3px;text-align:center;font-size:10px;">'+(assenze||'—')+'</td>';
+    html+='</tr>';
+  }
+  html+='</table></div></div>';
+  return html;
+}
+
 function renderReport(){
   const ints=getPInts();
   const comp=ints.filter(i=>i.terminata).length;
@@ -767,7 +943,7 @@ function renderReport(){
   const nPioggia=nls.filter(x=>x.motivo==='pioggia').length;
   const nAltro=nls.filter(x=>x.motivo==='altro').length;
 
-  let html=buildWeekDashboard();
+  let html=buildPeriodDashboard();
 
   html+=`<div class="sg">
     <div class="sb"><div class="sv">${ints.length}</div><div class="sl">🌿 Interventi</div></div>
