@@ -183,9 +183,8 @@ select.fi{-webkit-appearance:none;}
       <div class="ct">📊 Periodo di riferimento</div>
       <div class="rp-g" id="reportPeriods">
         <button class="rp-b act" onclick="setRP('sett',this)">📅 Settimana</button>
-        <button class="rp-b" onclick="setRP('mese',this)">🗓️ Mese</button>
-        <button class="rp-b" onclick="setRP('trim',this)">📆 Trimestre</button>
-        <button class="rp-b" onclick="setRP('anno',this)">🗓️ Anno</button>
+        <button class="rp-b" onclick="setRP('mese',this)">📆 Mese</button>
+        <button class="rp-b" onclick="setRP('trim',this)">📊 Trimestre</button>
       </div>
     </div>
     <div id="reportContent"></div>
@@ -764,8 +763,7 @@ function localDs(dt){
 function buildPeriodDashboard(){
   if(rpPeriod==='sett')return buildWeekDashboard();
   if(rpPeriod==='mese')return buildMonthDashboard();
-  if(rpPeriod==='trim')return buildTrimDashboard();
-  return buildAnnoDashboard();
+  return buildTrimDashboard();
 }
 
 function buildDayCell(ds,turno,ints,nls,isFuture){
@@ -856,9 +854,9 @@ function buildTrimDashboard(){
       let amDone=0,amMiss=0,pmDone=0,pmMiss=0,ore=0;
       for(let i=0;i<5;i++){
         const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
-        if(d.getMonth()!==m){weekStart.setDate(weekStart.getDate()+7);continue;}
+        if(d.getMonth()!==m)continue;
         const ds=localDs(d);
-        if(ds>todayStr){weekStart.setDate(weekStart.getDate()+7);continue;}
+        if(ds>todayStr)continue;
         const dw=d.getDay();
         const nlAm=nls.find(x=>x.data===ds&&x.turno==='am');
         if(!nlAm){const h=ints.find(x=>x.data===ds&&x.turno==='am');if(h){amDone++;ore+=(h.ore||5);}else{amMiss++;}}
