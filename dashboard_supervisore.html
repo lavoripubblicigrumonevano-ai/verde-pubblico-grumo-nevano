@@ -254,11 +254,31 @@ function renderKPIs() {
   document.getElementById('k-aree').textContent = aree.size;
 }
 
-function areaEmoji(areaId) {
-  const a = AREAS.find(x=>x.id===areaId);
-  if (!a) return '📍';
-  const fixed = {1:'🏫',2:'🏫',3:'🏫',4:'🏫',5:'🏫',6:'🏫',7:'🏛️',8:'🌳',9:'🌿',10:'🛝',11:'⚽',13:'⚽',29:'🚔'};
-  return fixed[areaId] || ({scuola:'🏫',pubbl:'🌳',sport:'⚽',ist:'🏛️'}[a.tipo]||'📍');
+const TICON_D={scuola:'🏫',pubbl:'🌳',sport:'⚽',piazza:'🏛️',priv:'🔒',ist:'🚨'};
+const AICON_D={7:{ico:'🏛️',bg:'#e3f2fd'},9:{ico:'🌱',bg:'#e8f5e9'},11:{ico:'⚽',bg:'#e3f2fd'},29:{ico:'👮',bg:'#ffebee'}};
+
+function getAreaIcon(id,size){
+  size=size||32;
+  const a=AREAS.find(x=>x.id===id);
+  if(!a)return '<div style="width:'+size+'px;height:'+size+'px;"></div>';
+  if(a.tipo==='scuola'){
+    const LBL={1:'V',2:'G',3:'24',4:'Q',5:'MS',6:'B'};
+    const lbl=LBL[id]||'';
+    const fs=lbl.length>1?Math.round(size*.34):Math.round(size*.46);
+    return '<div style="width:'+size+'px;height:'+size+'px;background:#1a3a0d;border-radius:8px;border:3px solid #6ab04c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+      +'<span style="color:#e8ffe8;font-size:'+fs+'px;font-weight:900;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6);">'+lbl+'</span></div>';
+  }
+  if(id===8||id===10||id===13){
+    const LBL={8:'M',10:'N',13:'C'};
+    const lbl=LBL[id]||'';
+    return '<div style="width:'+size+'px;height:'+size+'px;background:#e8f5e9;border-radius:8px;border:2px solid #81c784;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:1px;">'
+      +'<span style="font-size:'+Math.round(size*.44)+'px;line-height:1;">\uD83C\uDFA0</span>'
+      +(lbl?'<span style="font-size:'+Math.round(size*.22)+'px;font-weight:900;color:#1b5e20;line-height:1;">'+lbl+'</span>':'')
+      +'</div>';
+  }
+  const ai=AICON_D[id]||{ico:TICON_D[a.tipo]||'\uD83D\uDCCD',bg:'#f5f5f5'};
+  return '<div style="width:'+size+'px;height:'+size+'px;background:'+ai.bg+';border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    +'<span style="font-size:'+Math.round(size*.48)+'px;line-height:1;">'+ai.ico+'</span></div>';
 }
 
 function localDsD(d) {
@@ -322,8 +342,7 @@ function renderWeekTable() {
       } else if (dayInts.length > 0) {
         const i0 = dayInts[0];
         const a = AREAS.find(x=>x.id===i0.areaId);
-        const ico = areaEmoji(i0.areaId);
-        const ore = dayInts.reduce((s,i)=>s+(i.ore||0),0);
+                const ore = dayInts.reduce((s,i)=>s+(i.ore||0),0);
         html += '<td class="ok" title="'+(a?a.nome:'Area '+i0.areaId)+'" style="text-align:center;"><div style="font-size:22px;">'+ico+'</div><div style="font-size:10px;color:#2e7d32;font-weight:600;">'+ore+'h</div></td>';
       } else {
         if (ds > today) {
@@ -387,13 +406,13 @@ function buildDashCellFull(ds,turno,ints,nl,isFut,isTod) {
   const n = nl.find(x=>x.data===ds&&x.turno===turno);
   if (n) {
     const ico={ferie:'🏖️',pioggia:'🌧️',malattia:'🤒',altro:'📋'}[n.motivo]||'📋';
-    return '<td class="nl" style="text-align:center;font-size:16px;" title="'+n.motivo+'">'+ico+'</td>';
+    return '<td class="nl" style="text-align:center;padding:3px;"><div style="font-size:20px;">'+ico+'</div></td>';
   }
   const hit = ints.find(x=>x.data===ds&&x.turno===turno);
   if (hit) {
-    const ico = areaEmoji(hit.areaId);
+    const ico = getAreaIcon(hit.areaId,28);
     const a = AREAS.find(x=>x.id===hit.areaId);
-    return '<td class="ok" style="text-align:center;" title="'+(a?a.nome:'')+'"><div style="font-size:18px;">'+ico+'</div><div style="font-size:9px;color:#2e7d32;">'+(hit.ore||0)+'h</div></td>';
+    return '<td class="ok" style="text-align:center;padding:2px;" title="'+(a?a.nome:'')+'">'+getAreaIcon(hit.areaId,28)+'<div style="font-size:9px;color:#2e7d32;font-weight:600;">'+(hit.ore||0)+'h</div></td>';
   }
   if (isTod) return '<td style="text-align:center;background:#fffde7;font-size:14px;">⏳</td>';
   return '<td class="miss" style="text-align:center;font-size:16px;">❌</td>';
